@@ -1,48 +1,59 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.voltvoodoo</groupId>
-  <artifactId>saplo4j</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>Saplo4j</name>
-  <description>Saplo client for Java.</description>
-  <repositories>
-     <repository>
-       <id>repository.jboss.org</id>
-       <url>http://repository.jboss.org/maven2</url>
-       <snapshots>
-         <enabled>false</enabled>
-       </snapshots>
-     </repository>
-   </repositories>
-  <build>
-  	<plugins>
-  		<plugin>
-  			<groupId>org.codehaus.mojo</groupId>
-  			<artifactId>surefire-report-maven-plugin</artifactId>
-  			<version>2.0-beta-1</version>
-  		</plugin>
-		<plugin>
-			<artifactId>maven-compiler-plugin</artifactId>
-			<version>2.0.2</version>
-			<configuration>
-				<source>${project.source_compliance}</source>
-				<target>${project.target_compliance}</target>
-			</configuration>
-		</plugin>
-  	</plugins>
-  </build>
-  <properties>
-	<!-- JAVA COMPILER INFO -->
-	<project.source_compliance>1.5</project.source_compliance>
-	<project.target_compliance>1.5</project.target_compliance>
-  </properties>
-  <dependencies>
-  	<dependency>
-  		<groupId>com.googlecode.json-simple</groupId>
-  		<artifactId>json-simple</artifactId>
-  		<version>1.1</version>
-  		<type>jar</type>
-  		<scope>compile</scope>
-  	</dependency>
-  </dependencies>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.voltvoodoo</groupId>
+	<artifactId>saplo4j</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>Saplo4j</name>
+	<description>Saplo client for Java.</description>
+	<repositories>
+		<repository>
+			<id>repository.jboss.org</id>
+			<url>http://repository.jboss.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>surefire-report-maven-plugin</artifactId>
+				<version>2.0-beta-1</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.0.2</version>
+				<configuration>
+					<source>${project.source_compliance}</source>
+					<target>${project.target_compliance}</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<properties>
+		<!-- JAVA COMPILER INFO -->
+		<project.source_compliance>1.5</project.source_compliance>
+		<project.target_compliance>1.5</project.target_compliance>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- Temporary until Netty 3.2 is available in public maven repos. -->
+		<dependency>
+			<groupId>org.jboss.netty</groupId>
+			<artifactId>netty</artifactId>
+			<version>3.2.0.CR1</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/src/main/resources/lib/netty-3.2.0.CR1.jar</systemPath>
+		</dependency>
+
+	</dependencies>
 </project>

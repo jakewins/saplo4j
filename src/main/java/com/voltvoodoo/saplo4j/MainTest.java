@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import com.voltvoodoo.saplo4j.async.SaploCallback;
 import com.voltvoodoo.saplo4j.exception.SaploException;
-import com.voltvoodoo.saplo4j.model.Language;
 import com.voltvoodoo.saplo4j.model.SaploCorpus;
 import com.voltvoodoo.saplo4j.model.SaploDocument;
 import com.voltvoodoo.saplo4j.model.SaploSimilarity;
