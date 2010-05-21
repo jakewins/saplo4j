@@ -7,11 +7,18 @@
 	<name>Saplo4j</name>
 	<description>Saplo client for Java.</description>
 	<repositories>
-		<repository>
+		<!-- repository>
 			<id>repository.jboss.org</id>
 			<url>http://repository.jboss.org/maven2</url>
 			<snapshots>
 				<enabled>false</enabled>
+			</snapshots>
+		</repository -->
+		<repository>
+			<id>repository.jboss.org</id>
+			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
+			<snapshots>
+				<enabled>true</enabled>
 			</snapshots>
 		</repository>
 	</repositories>
@@ -43,7 +50,7 @@
 			<artifactId>json-simple</artifactId>
 			<version>1.1</version>
 			<type>jar</type>
-			<scope>compile</scope>
+			<scope></scope>
 		</dependency>
 
 		<!-- Temporary until Netty 3.2 is available in public maven repos. -->
@@ -51,9 +58,8 @@
 			<groupId>org.jboss.netty</groupId>
 			<artifactId>netty</artifactId>
 			<version>3.2.0.CR1</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/src/main/resources/lib/netty-3.2.0.CR1.jar</systemPath>
+			<type>jar</type>
+			<scope>compile</scope>
 		</dependency>
-
 	</dependencies>
 </project>
