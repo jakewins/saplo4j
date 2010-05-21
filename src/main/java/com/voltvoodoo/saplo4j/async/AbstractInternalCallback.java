@@ -12,6 +12,17 @@ import com.voltvoodoo.saplo4j.exception.SaploGeneralException;
 import com.voltvoodoo.saplo4j.exception.SaploMatchException;
 import com.voltvoodoo.saplo4j.exception.SaploTagException;
 
+/**
+ * Parent for callbacks that are handle "raw" responses from Saplo. This class
+ * takes care of error checking and JSON typecasting.
+ * 
+ * This also provides a "wait" method, {@link #awaitResponse(long)}, that allows you
+ * to block the current thread until your callback has been called. This in effect
+ * emulates synchronous behavior.
+ *  
+ * @author Jacob Hansson <jacob@voltvoodoo.com>
+ *
+ */
 public abstract class AbstractInternalCallback implements SaploCallback<Object> {
 
 	protected volatile boolean gotResponse = false;
@@ -41,7 +52,12 @@ public abstract class AbstractInternalCallback implements SaploCallback<Object> 
 			
 			// Check for errors
 			JSONObject jsonResult = (JSONObject)result;
-			if(jsonResult.containsKey("error")) {
+			
+			if( jsonResult == null) {
+				
+				System.out.println("Saplo responded with a NULL answer :(");
+				
+			} else if(jsonResult.containsKey("error")) {
 				
 				int errorCode = Integer.valueOf(((JSONObject)jsonResult.get("error")).get("code").toString());
 				String errorMessage = ((JSONObject)jsonResult.get("error")).get("msg").toString();

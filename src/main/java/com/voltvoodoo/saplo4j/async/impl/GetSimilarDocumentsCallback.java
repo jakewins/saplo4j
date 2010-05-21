@@ -52,6 +52,7 @@ public class GetSimilarDocumentsCallback extends AbstractInternalCallback {
 	// PUBLIC
 	//
 	
+	@SuppressWarnings("unchecked")
 	public void onFailedResponse(SaploException exception) {
 		if ( exception.getErrorCode() == 1004 || exception.getErrorCode() == 1005 ) {
 			// Saplo is still working, send request again.
@@ -60,6 +61,12 @@ public class GetSimilarDocumentsCallback extends AbstractInternalCallback {
 			} catch (SaploException e) {
 				this.exception = e;
 			}
+		} else if ( exception.getErrorCode() == 1501 ) {
+			// No results found, trigger successful response with empty result
+			// XXX: Triggering an error on empty results is behaviour that is due to change in the next iteration of the Saplo API
+			JSONObject emulatedResponse = new JSONObject();
+			emulatedResponse.put("result", Saplo.params());
+			this.onSuccessfulResponse(emulatedResponse);
 		} else {
 			this.exception = exception;
 		}

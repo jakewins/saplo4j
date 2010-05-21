@@ -1,10 +1,13 @@
 package com.voltvoodoo.saplo4j;
 
+import java.util.ArrayList;
+
 import com.voltvoodoo.saplo4j.async.SaploCallback;
 import com.voltvoodoo.saplo4j.exception.SaploException;
 import com.voltvoodoo.saplo4j.model.Language;
 import com.voltvoodoo.saplo4j.model.SaploCorpus;
 import com.voltvoodoo.saplo4j.model.SaploDocument;
+import com.voltvoodoo.saplo4j.model.SaploSimilarity;
 
 public class MainTest {
 
@@ -14,13 +17,13 @@ public class MainTest {
 	public static void main(String [] args) {
 		
 		try {
-			Saplo saplo = new Saplo("API KEY","SECRET KEY");
+			Saplo saplo = new Saplo("","");
 			
 			//saplo.createCorpus("jacorp", "Jacobs fin-fina corpus.", Language.ENGLISH);
 			
 			SaploCorpus.Id jacorp = new SaploCorpus.Id(191l);
 			SaploDocument.Id myDocId = new SaploDocument.Id(1l);
-//			
+			
 //			saplo.addDocument(jacorp, "HELLO1", DOC2, Language.ENGLISH);
 //			saplo.addDocument(jacorp, "HELLO2", DOC1, Language.ENGLISH);
 //			saplo.addDocument(jacorp, "HELLO3", DOC2, Language.ENGLISH);
@@ -30,10 +33,29 @@ public class MainTest {
 //			saplo.addDocument(jacorp, "HELLO7", DOC2, Language.ENGLISH);
 //			saplo.addDocument(jacorp, "HELLO8", DOC1, Language.ENGLISH);
 			
-			saplo.getSimilarDocuments(jacorp, myDocId);
+			// Trigger a fuckload of requests
+			for( int i = 0; i < 40; i ++ ) {
+				saplo.getSimilarDocuments(jacorp, myDocId, new SaploCallback<ArrayList<SaploSimilarity>>() {
 
+					public void onFailure(SaploException exception) {
+						// TODO Auto-generated method stub
+						
+					}
+
+					public void onSuccess(ArrayList<SaploSimilarity> result) {
+						System.out.println("Success!");
+					}
+					
+				});
+			}
+			
+			Thread.sleep(20 * 1000);
+			
 			saplo.close();
 		} catch (SaploException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

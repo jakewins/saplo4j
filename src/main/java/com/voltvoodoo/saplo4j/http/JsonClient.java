@@ -18,6 +18,7 @@ import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.netty.handler.codec.http.HttpContentDecompressor;
 import org.jboss.netty.handler.codec.http.HttpRequestEncoder;
 import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.jboss.netty.handler.codec.http.HttpVersion;
@@ -162,6 +163,7 @@ public class JsonClient {
 		ClientBootstrap bootstrap = new ClientBootstrap(channelFactory);
 		
 		bootstrap.getPipeline().addLast("decoder",    new HttpResponseDecoder());
+		bootstrap.getPipeline().addLast("inflater",   new HttpContentDecompressor());
 		bootstrap.getPipeline().addLast("aggregator", new HttpChunkAggregator(1048576));
 		bootstrap.getPipeline().addLast("encoder",    new HttpRequestEncoder());
 		bootstrap.getPipeline().addLast("handler",    new JsonResponseHandler(callback));

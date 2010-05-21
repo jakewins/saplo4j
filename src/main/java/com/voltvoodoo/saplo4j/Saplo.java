@@ -228,7 +228,7 @@ public class Saplo {
 	}
 	
 	public void getSimilarDocuments(SaploCorpus.Id corpusId, SaploDocument.Id id, List<SaploCorpus.Id> searchIn, SaploCallback<ArrayList<SaploSimilarity>> callback ) throws SaploException {
-		call("match.getSimilarArticles", params(corpusId, id, searchIn), new GetSimilarDocumentsCallback(this, id, corpusId, searchIn, callback));
+		call("match.getSimilarArticles", params(corpusId, id, searchIn, MAX_WAIT_SECONDS), new GetSimilarDocumentsCallback(this, id, corpusId, searchIn, callback));
 	}
 	
 	//

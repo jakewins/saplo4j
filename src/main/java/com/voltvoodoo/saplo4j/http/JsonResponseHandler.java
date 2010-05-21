@@ -25,7 +25,17 @@ public class JsonResponseHandler extends SimpleChannelUpstreamHandler {
 		HttpResponse response = (HttpResponse) e.getMessage();
 		ChannelBuffer content = response.getContent();
 		if (content.readable()) {
-			callback.onSuccess(JSONValue.parse(content.toString("UTF-8")));
+			Object result = JSONValue.parse(content.toString("UTF-8"));
+			if( result == null ) {
+				// XXX: Debugging
+				System.out.println("FATAL: Unreadable response");
+				System.out.println("In UTF-8:");
+				System.out.println(content.toString("UTF-8"));
+				System.out.println("Raw:");
+				System.out.println(content.toString());
+			}
+			
+			callback.onSuccess(result);
 		}
 	}
 	
