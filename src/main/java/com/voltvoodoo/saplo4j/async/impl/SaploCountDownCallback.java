@@ -13,7 +13,7 @@ import com.voltvoodoo.saplo4j.exception.SaploException;
  *
  */
 public abstract class SaploCountDownCallback<T> implements SaploCallback<T> {
-
+	
 	protected int callCountDown;
 	
 	public SaploCountDownCallback(int numCalls) {

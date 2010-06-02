@@ -42,10 +42,6 @@ public class GetSimilarDocumentsCallback extends AbstractInternalCallback {
 		this.sourceCorpusId = sourceCorpusId;
 		this.sourceDocumentId = sourceDocumentId;
 		this.searchIn = searchIn;
-		
-		if(userCallback != null) {
-			userCallback.onFailure(exception);
-		}
 	}
 	
 	//
@@ -59,7 +55,7 @@ public class GetSimilarDocumentsCallback extends AbstractInternalCallback {
 			try {
 				this.saplo.call("match.getSimilarArticles", Saplo.params(sourceCorpusId, sourceDocumentId, searchIn), this);
 			} catch (SaploException e) {
-				this.exception = e;
+				this.onFailedResponse(e);
 			}
 		} else if ( exception.getErrorCode() == 1501 ) {
 			// No results found, trigger successful response with empty result
@@ -69,6 +65,10 @@ public class GetSimilarDocumentsCallback extends AbstractInternalCallback {
 			this.onSuccessfulResponse(emulatedResponse);
 		} else {
 			this.exception = exception;
+			
+			if(userCallback != null) {
+				userCallback.onFailure(exception);
+			}
 		}
 	}
 

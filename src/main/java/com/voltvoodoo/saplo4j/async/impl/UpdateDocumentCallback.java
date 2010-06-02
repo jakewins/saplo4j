@@ -5,7 +5,6 @@ import org.json.simple.JSONObject;
 import com.voltvoodoo.saplo4j.async.AbstractInternalCallback;
 import com.voltvoodoo.saplo4j.async.SaploCallback;
 import com.voltvoodoo.saplo4j.exception.SaploException;
-import com.voltvoodoo.saplo4j.model.SaploDocument;
 
 public class UpdateDocumentCallback extends AbstractInternalCallback {
 	

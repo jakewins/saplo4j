@@ -1,10 +1,7 @@
 package com.voltvoodoo.saplo4j;
 
-import static com.voltvoodoo.saplo4j.model.LangUtils.*;
-
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.json.simple.JSONArray;
@@ -44,11 +41,10 @@ import com.voltvoodoo.saplo4j.model.SaploSimilarity;
 @SuppressWarnings("unchecked")
 public class Saplo {
 	
-//	public static String SAPLO_URL = "http://localhost:8111/";"http://api.saplo.com/";
 	public static String SAPLO_URL = "http://api.saplo.com/";
 	public static String API_RESOURCE = "/rpc/json";
 	
-	protected static int MAX_WAIT_SECONDS = 1; // Maximum time to wait for a response.
+	protected static int MAX_WAIT_SECONDS = 180; // Maximum time to wait for a response.
 	
 	protected volatile String sessionId;
 	protected JsonClient jsonClient;
@@ -119,7 +115,7 @@ public class Saplo {
 	public SaploCorpus.Id createCorpus(String name, String description, Language lang) throws SaploException {
 		
 		CreateCorpusCallback cb = new CreateCorpusCallback();
-		call("corpus.createCorpus", params(name, description, lang2String(lang)), cb);
+		call("corpus.createCorpus", params(name, description, lang), cb);
 		
 		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
 		
@@ -141,7 +137,7 @@ public class Saplo {
 	public SaploDocument.Id addDocument(SaploCorpus.Id corpusId, String headline, String body, Language lang) throws SaploException {
 		
 		AddDocumentCallback cb = new AddDocumentCallback();
-		call("corpus.addArticle", params(corpusId, headline, "", body, "", "", "", lang2String(lang)), cb);
+		call("corpus.addArticle", params(corpusId, headline, "", body, "", "", "", lang), cb);
 		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
 		
 		if( cb.documentId != null ) {
@@ -153,7 +149,7 @@ public class Saplo {
 	
 	public boolean updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id, String headline, String body, Language lang) throws SaploException {
 		UpdateDocumentCallback cb = new UpdateDocumentCallback();
-		call("corpus.updateArticle", params(corpusId, id, headline, "", body, "", "", "", lang2String(lang)), cb);
+		call("corpus.updateArticle", params(corpusId, id, headline, "", body, "", "", "", lang), cb);
 		cb.awaitResponse(10000);
 		
 		if( cb.exception == null ) {
@@ -180,11 +176,11 @@ public class Saplo {
 	// Async
 	
 	public void addDocument(SaploCorpus.Id corpusId, String headline, String body, Language lang, SaploCallback<SaploDocument.Id> callback ) throws SaploException {
-		call("corpus.addArticle", params(corpusId, headline, "", body, "", "", "", lang2String(lang)), new AddDocumentCallback(callback));
+		call("corpus.addArticle", params(corpusId, headline, "", body, "", "", "", lang), new AddDocumentCallback(callback));
 	}
 	
 	public void updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id, String headline, String body, Language lang, SaploCallback<Boolean> callback) throws SaploException {
-		call("corpus.updateArticle", params(corpusId, id, headline, "", body, "", "", "", lang2String(lang)), new UpdateDocumentCallback(callback));
+		call("corpus.updateArticle", params(corpusId, id, headline, "", body, "", "", "", lang), new UpdateDocumentCallback(callback));
 	}
 	
 	public void getDocument(SaploCorpus.Id corpusId, SaploDocument.Id id, SaploCallback<SaploDocument> callback) throws SaploException {

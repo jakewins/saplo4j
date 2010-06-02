@@ -21,10 +21,6 @@ public class AddDocumentCallback extends AbstractInternalCallback {
 	public AddDocumentCallback() {}
 	public AddDocumentCallback(SaploCallback<SaploDocument.Id> userCallback) {
 		this.userCallback = userCallback;
-		
-		if(userCallback != null) {
-			userCallback.onFailure(exception);
-		}
 	}
 	
 	//
@@ -33,6 +29,10 @@ public class AddDocumentCallback extends AbstractInternalCallback {
 	
 	public void onFailedResponse(SaploException exception) {
 		this.exception = exception;
+		
+		if(userCallback != null) {
+			userCallback.onFailure(exception);
+		}
 	}
 
 	public void onSuccessfulResponse(JSONObject result) {

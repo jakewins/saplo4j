@@ -36,7 +36,7 @@ public abstract class AbstractInternalCallback implements SaploCallback<Object> 
 	public abstract void onFailedResponse(SaploException exception);
 	
 	public void onFailure(SaploException exception) {
-		exception.printStackTrace();
+		
 		if( alive ) {
 			onFailedResponse(exception);
 		}
@@ -48,14 +48,15 @@ public abstract class AbstractInternalCallback implements SaploCallback<Object> 
 
 		if( alive ) {
 			
-			System.out.println("RESPONSE: " + result);
+//			System.out.println("RESPONSE: " + result);
 			
 			// Check for errors
 			JSONObject jsonResult = (JSONObject)result;
 			
 			if( jsonResult == null) {
 				
-				System.out.println("Saplo responded with a NULL answer :(");
+				// Server returned non-json response
+				onFailedResponse(new SaploGeneralException("Saplo API returned a non-JSON response."));
 				
 			} else if(jsonResult.containsKey("error")) {
 				
@@ -97,7 +98,7 @@ public abstract class AbstractInternalCallback implements SaploCallback<Object> 
 		while( ! gotResponse) {
 			try {
 				Thread.sleep(20);
-					
+				
 				current = new Date();
 				if ( current.after( end )) {
 					this.alive = false; // Make sure the wrapped callback is not called later
