@@ -60,8 +60,18 @@ public abstract class AbstractInternalCallback implements SaploCallback<Object> 
 				
 			} else if(jsonResult.containsKey("error")) {
 				
-				int errorCode = Integer.valueOf(((JSONObject)jsonResult.get("error")).get("code").toString());
-				String errorMessage = ((JSONObject)jsonResult.get("error")).get("msg").toString();
+				int errorCode = -1;
+				String errorMessage = "Error in error message: Saplo did not return an error description.";
+				
+				if( ((JSONObject)jsonResult.get("error")).containsKey("code") ) {
+					errorCode = Integer.valueOf(((JSONObject)jsonResult.get("error")).get("code").toString());
+				}
+				
+				if( ((JSONObject)jsonResult.get("error")).containsKey("msg") ) {
+					errorMessage = ((JSONObject)jsonResult.get("error")).get("msg").toString();
+				}
+				
+				errorMessage = "(" + errorCode + ") " + errorMessage;
 				
 				SaploException exception;
 				if ( errorCode < 1100 ) {

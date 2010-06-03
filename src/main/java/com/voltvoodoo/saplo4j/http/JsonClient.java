@@ -3,6 +3,7 @@ package com.voltvoodoo.saplo4j.http;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -111,10 +112,11 @@ public class JsonClient {
 	// INTERNALS
 	//
 	
+	@SuppressWarnings("unchecked")
 	protected void request(final String resource, final Object data, SaploCallback<Object> callback, final HttpMethod method) throws SaploConnectionException {
 		
 		// CONNECT
-		ClientBootstrap boot = boot(callback);
+		ClientBootstrap boot = boot(callback, data);
 		ChannelFuture future = boot.connect(new InetSocketAddress(host, port));
 		
 		// Create a channel, wait until it is established
@@ -135,8 +137,14 @@ public class JsonClient {
 				if (method == HttpMethod.POST || method == HttpMethod.PUT) {
 					if( data != null) {
 						System.out.println("REQUEST ("+ resource +"): " + data);
-						request.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(data.toString().length()));
-						request.setContent(jsonStringBuffer(data));
+						
+						byte [] binaryData = binaryJSON(data);
+						ChannelBuffer buffer = ChannelBuffers.buffer(binaryData.length);
+						buffer.writeBytes(binaryData);
+						
+						request.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String.valueOf(binaryData.length));
+						request.setContent(buffer);
+						
 					} else {
 						System.out.println("REQUEST ("+ resource +"): No data.");
 						request.setHeader(HttpHeaders.Names.CONTENT_LENGTH, "0");
@@ -159,19 +167,19 @@ public class JsonClient {
 		});
 	}
 	
-	protected ClientBootstrap boot(SaploCallback<Object> callback) {
+	protected ClientBootstrap boot(SaploCallback<Object> callback, Object requestData) {
 		ClientBootstrap bootstrap = new ClientBootstrap(channelFactory);
 		
 		bootstrap.getPipeline().addLast("decoder",    new HttpResponseDecoder());
 		bootstrap.getPipeline().addLast("inflater",   new HttpContentDecompressor());
 		bootstrap.getPipeline().addLast("aggregator", new HttpChunkAggregator(1048576));
 		bootstrap.getPipeline().addLast("encoder",    new HttpRequestEncoder());
-		bootstrap.getPipeline().addLast("handler",    new JsonResponseHandler(callback));
+		bootstrap.getPipeline().addLast("handler",    new JsonResponseHandler(callback, requestData));
 		
 		return bootstrap;
 	}
 	
-	protected ChannelBuffer jsonStringBuffer(Object data) {
+	protected static byte[] binaryJSON(Object data) {
 		byte[] binaryData;
 		
 		if ( data instanceof JSONObject || data instanceof JSONArray ) {
@@ -180,10 +188,7 @@ public class JsonClient {
 			binaryData = JSONValue.toJSONString(data).getBytes();
 		}
 		
-		ChannelBuffer buf = ChannelBuffers.buffer(binaryData.length);
-		buf.writeBytes(binaryData);
-		
-		return buf;
+		return binaryData;
 	}
 	
 }

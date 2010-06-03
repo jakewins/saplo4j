@@ -13,9 +13,11 @@ import com.voltvoodoo.saplo4j.async.SaploCallback;
 public class JsonResponseHandler extends SimpleChannelUpstreamHandler {
 	
 	protected SaploCallback<Object> callback;
+	protected Object requestData;
 	
-	public JsonResponseHandler(SaploCallback<Object> callback) {
+	public JsonResponseHandler(SaploCallback<Object> callback, Object requestData) {
 		this.callback = callback;
+		this.requestData = requestData;
 	}
 	
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
@@ -27,7 +29,10 @@ public class JsonResponseHandler extends SimpleChannelUpstreamHandler {
 			Object result = JSONValue.parse(content.toString("UTF-8"));
 			
 			if( result == null ) {
-				System.out.println("SAPLO ERROR, unparseable response:");
+				System.out.println("SAPLO ERROR, unparseable response.");
+				System.out.println("OUR REQUEST:");
+				System.out.println(requestData);
+				System.out.println("SAPLO RESPONSE:");
 				System.out.println(content.toString("UTF-8"));
 			}
 			

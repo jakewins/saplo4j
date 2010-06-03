@@ -1,7 +1,11 @@
 package com.voltvoodoo.saplo4j.async.impl;
 
+import java.util.ArrayList;
+import java.util.Date;
+
 import com.voltvoodoo.saplo4j.async.SaploCallback;
 import com.voltvoodoo.saplo4j.exception.SaploException;
+import com.voltvoodoo.saplo4j.exception.SaploGeneralException;
 
 
 /**
@@ -13,7 +17,8 @@ import com.voltvoodoo.saplo4j.exception.SaploException;
  *
  */
 public abstract class SaploCountDownCallback<T> implements SaploCallback<T> {
-	
+
+	protected ArrayList<SaploException> exceptions = new ArrayList<SaploException>();
 	protected int callCountDown;
 	
 	public SaploCountDownCallback(int numCalls) {
@@ -47,8 +52,51 @@ public abstract class SaploCountDownCallback<T> implements SaploCallback<T> {
 	}
 
 	public final void onFailure(SaploException exception) {
+		if( exception != null ) {
+			this.exceptions.add(exception);
+		}
+		
 		this.onEachFailure(exception);
 		this.called();
+	}
+	
+	/**
+	 * Check if there have been any exceptions caught.
+	 */
+	public boolean hasExceptions() {
+		return this.exceptions.size() > 0;
+	}
+	
+	/**
+	 * @return the list of exceptions
+	 */
+	public ArrayList<SaploException> getExceptions() {
+		return this.exceptions;
+	}
+	
+	/**
+	 * Wait until the number of calls to onSuccess and/or onFailure defined by the numCalls have been made.
+	 * @param timeout
+	 * @throws SaploGeneralException
+	 */
+	public void awaitAllFinish(long timeout) throws SaploGeneralException {
+		Date current, end = new Date();
+		end.setTime(end.getTime() + timeout);
+		
+		// Lock up thread until response, interrupt or timeout
+		while( callCountDown > 0) {
+			try {
+				Thread.sleep(20);
+				
+				current = new Date();
+				if ( current.after( end )) {
+					throw new SaploGeneralException("Waiting for all saplo callbacks to finish timed out (current timeout is " + timeout + "ms).");
+				}
+				
+			} catch (InterruptedException e) {
+				break;
+			}
+		}
 	}
 	
 	//
