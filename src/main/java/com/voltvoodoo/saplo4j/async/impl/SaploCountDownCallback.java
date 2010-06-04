@@ -19,7 +19,7 @@ import com.voltvoodoo.saplo4j.exception.SaploGeneralException;
 public abstract class SaploCountDownCallback<T> implements SaploCallback<T> {
 
 	protected ArrayList<SaploException> exceptions = new ArrayList<SaploException>();
-	protected int callCountDown;
+	protected volatile int callCountDown;
 	
 	public SaploCountDownCallback(int numCalls) {
 		this.callCountDown = numCalls;
@@ -84,7 +84,7 @@ public abstract class SaploCountDownCallback<T> implements SaploCallback<T> {
 		end.setTime(end.getTime() + timeout);
 		
 		// Lock up thread until response, interrupt or timeout
-		while( callCountDown > 0) {
+		while( callCountDown > 0 ) {
 			try {
 				Thread.sleep(20);
 				

@@ -253,6 +253,7 @@ public class Saplo {
 		} else {
 			request.put("params", new JSONArray());
 		}
+		
 		request.put("id", ++requestCount);
 		jsonClient.post(API_RESOURCE + ";jsessionid=" + sessionId, request, callback);
 	}
