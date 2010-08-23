@@ -92,11 +92,20 @@ public class GetSimilarDocumentsCallback extends AbstractInternalCallback {
 		for (Object document : jsonDocuments) {
 			jsonDocument = (JSONObject) document;
 
+			Object resultValueObject = jsonDocument.get("resultValue");
+
+			double resultValue;
+			if (resultValueObject instanceof Long) {
+				resultValue = ((Long) resultValueObject).doubleValue();
+			} else {
+				resultValue = (Double) resultValueObject;
+			}
+
 			similarDocuments.add(new SaploSimilarity(sourceDocumentId,
 					sourceCorpusId, new SaploDocument.Id((Long) jsonDocument
 							.get("resultArticleId")), new SaploCorpus.Id(
 							(Long) jsonDocument.get("resultCorpusId")),
-					(Double) jsonDocument.get("resultValue")));
+					resultValue));
 		}
 
 		if (userCallback != null) {
