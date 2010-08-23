@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.voltvoodoo</groupId>
 	<artifactId>saplo4j</artifactId>
-	<version>0.2-SNAPSHOT</version>
+	<version>0.1-SNAPSHOT</version>
 	<name>Saplo4j</name>
 	<description>Saplo client for Java.</description>
 	<repositories>
