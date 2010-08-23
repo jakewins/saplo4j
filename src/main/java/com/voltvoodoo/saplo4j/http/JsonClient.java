@@ -124,7 +124,7 @@ public class JsonClient {
 			throws SaploConnectionException {
 
 		// CONNECT
-		ClientBootstrap boot = boot(callback, data);
+		ClientBootstrap boot = doBoot(callback, data);
 		ChannelFuture future = boot.connect(new InetSocketAddress(host, port));
 
 		// Create a channel, wait until it is established
@@ -150,8 +150,6 @@ public class JsonClient {
 
 				if (method == HttpMethod.POST || method == HttpMethod.PUT) {
 					if (data != null) {
-						System.out.println("REQUEST (" + resource + "): "
-								+ data);
 
 						byte[] binaryData = binaryJSON(data);
 						ChannelBuffer buffer = ChannelBuffers
@@ -163,8 +161,6 @@ public class JsonClient {
 						request.setContent(buffer);
 
 					} else {
-						System.out.println("REQUEST (" + resource
-								+ "): No data.");
 						request.setHeader(HttpHeaders.Names.CONTENT_LENGTH, "0");
 						request.setContent(null);
 					}
@@ -186,7 +182,7 @@ public class JsonClient {
 		});
 	}
 
-	protected ClientBootstrap boot(SaploCallback<Object> callback,
+	protected ClientBootstrap doBoot(SaploCallback<Object> callback,
 			Object requestData) {
 		ClientBootstrap bootstrap = new ClientBootstrap(channelFactory);
 

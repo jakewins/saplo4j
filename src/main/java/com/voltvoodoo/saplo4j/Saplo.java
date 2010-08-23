@@ -202,6 +202,7 @@ public class Saplo {
 	public ArrayList<SaploSimilarity> getSimilarDocuments(
 			SaploCorpus.Id corpusId, SaploDocument.Id id,
 			List<SaploCorpus.Id> searchIn) throws SaploException {
+
 		GetSimilarDocumentsCallback cb = new GetSimilarDocumentsCallback(this,
 				id, corpusId, searchIn);
 		call("match.getSimilarArticles",

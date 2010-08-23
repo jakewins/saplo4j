@@ -31,11 +31,11 @@ public class JsonResponseHandler extends SimpleChannelUpstreamHandler {
 			Object result = JSONValue.parse(content.toString("UTF-8"));
 
 			if (result == null) {
-				System.out.println("SAPLO ERROR, unparseable response.");
-				System.out.println("OUR REQUEST:");
-				System.out.println(requestData);
-				System.out.println("SAPLO RESPONSE:");
-				System.out.println(content.toString("UTF-8"));
+				// System.out.println("SAPLO ERROR, unparseable response.");
+				// System.out.println("OUR REQUEST:");
+				// System.out.println(requestData);
+				// System.out.println("SAPLO RESPONSE:");
+				// System.out.println(content.toString("UTF-8"));
 			}
 
 			callback.onSuccess(result);
