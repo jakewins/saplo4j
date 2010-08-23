@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.voltvoodoo</groupId>
 	<artifactId>saplo4j</artifactId>
-	<version>0.2-SNAPSHOT</version>
+	<version>0.1-SNAPSHOT</version>
 	<name>Saplo4j</name>
 	<description>Saplo client for Java.</description>
 	<repositories>
@@ -61,9 +61,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:git:git@github.com:jakewins/saplo4j.git</connection>
-		<url>scm:git:git@github.com:jakewins/saplo4j.git</url>
-		<developerConnection>scm:git:git@github.com:jakewins/saplo4j.git</developerConnection>
+		<connection>scm:git:git@github.com:VoltVoodoo/saplo4j.git</connection>
+		<url>scm:git:git@github.com:VoltVoodoo/saplo4j.git</url>
+		<developerConnection>scm:git:git@github.com:VoltVoodoo/saplo4j.git</developerConnection>
 	</scm>
 
 </project>
