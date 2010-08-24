@@ -2,24 +2,19 @@ package com.voltvoodoo.saplo4j;
 
 import static com.voltvoodoo.saplo4j.utils.JsonUtils.jsonParams;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
 import com.voltvoodoo.saplo4j.async.SaploCallback;
 import com.voltvoodoo.saplo4j.async.impl.AddDocumentCallback;
-import com.voltvoodoo.saplo4j.async.impl.CloseSessionCallback;
 import com.voltvoodoo.saplo4j.async.impl.CreateCorpusCallback;
-import com.voltvoodoo.saplo4j.async.impl.CreateSessionCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetDocumentCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetSimilarDocumentsCallback;
 import com.voltvoodoo.saplo4j.async.impl.UpdateDocumentCallback;
 import com.voltvoodoo.saplo4j.exception.SaploConnectionException;
 import com.voltvoodoo.saplo4j.exception.SaploException;
-import com.voltvoodoo.saplo4j.http.JsonClient;
+import com.voltvoodoo.saplo4j.http.SaploConnection;
+import com.voltvoodoo.saplo4j.http.SaploRequest;
 import com.voltvoodoo.saplo4j.model.Language;
 import com.voltvoodoo.saplo4j.model.SaploCorpus;
 import com.voltvoodoo.saplo4j.model.SaploDocument;
@@ -27,8 +22,6 @@ import com.voltvoodoo.saplo4j.model.SaploSimilarity;
 
 /**
  * Java API for Saplo semantic analysis service.
- * 
- * XXX: This is under heavy refactoring and development.
  * 
  * Almost all of the methods within the API come in two versions, a synchronous
  * one and an asynchronous one. The asynchrounous API is, of course, a magnitude
@@ -42,44 +35,24 @@ import com.voltvoodoo.saplo4j.model.SaploSimilarity;
  *         <fredrik@saplo.com>,
  * 
  */
-@SuppressWarnings("unchecked")
 public class Saplo {
+
+	private static int MAX_WAIT_SECONDS = 180;
 
 	public static String SAPLO_URL = "http://api.saplo.com/";
 	public static String API_RESOURCE = "/rpc/json";
 
-	protected static int MAX_WAIT_SECONDS = 180; // Maximum time to wait for a
-													// response.
-
-	protected volatile String sessionId;
-	protected JsonClient jsonClient;
-	protected int requestCount = 0;
+	private SaploConnection saploConnection;
 
 	//
 	// CONSTRUCTORS
 	//
 
 	public Saplo(String apiKey, String secretKey) throws SaploException {
-		try {
-			jsonClient = new JsonClient(SAPLO_URL);
+		saploConnection = new SaploConnection(apiKey, secretKey, SAPLO_URL,
+				API_RESOURCE);
 
-			// Init session
-			CreateSessionCallback cb = new CreateSessionCallback();
-			initSession(apiKey, secretKey, cb);
-
-			cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
-
-			if (cb.exception != null) {
-				throw cb.exception;
-			} else {
-				this.sessionId = cb.sessionId;
-			}
-
-		} catch (URISyntaxException e) {
-			throw new SaploConnectionException(
-					"Unable to connect to Saplo API, url invalid. See nested exception.",
-					e);
-		}
+		saploConnection.open();
 	}
 
 	//
@@ -87,9 +60,7 @@ public class Saplo {
 	//
 
 	public void close() throws SaploException {
-		CloseSessionCallback cb = new CloseSessionCallback();
-		call("auth.killSession", null, cb);
-		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
+		saploConnection.close();
 	}
 
 	//
@@ -267,34 +238,32 @@ public class Saplo {
 	 */
 	public void call(String method, Object params,
 			SaploCallback<Object> callback) throws SaploConnectionException {
-		JSONObject request = new JSONObject();
-		request.put("method", method);
 
-		if (params != null) {
-			request.put("params", params);
-		} else {
-			request.put("params", new JSONArray());
-		}
+		saploConnection.call(new SaploRequest(method, params, callback));
 
-		request.put("id", ++requestCount);
-		jsonClient.post(API_RESOURCE + ";jsessionid=" + sessionId, request,
-				callback);
 	}
 
 	//
-	// INTERNALS
+	// SETTINGS
 	//
 
-	protected void initSession(String apiKey, String secretKey,
-			SaploCallback<Object> callback) throws SaploConnectionException {
-		JSONArray params = new JSONArray();
-		params.add(apiKey);
-		params.add(secretKey);
+	/**
+	 * This is used to "hide" API request limit reached errors. In essesence,
+	 * set this to true and you will not get those error. When a request limit
+	 * error is encountered, the request will be retried after an hour.
+	 * 
+	 * Turning this on will, if you are doing large amounts of requests, lead to
+	 * some requests taking up to an hour to complete.
+	 * 
+	 * Default value for this is false.
+	 */
+	public Saplo setHideRequestLimit(boolean hideRequestLimit) {
+		saploConnection.setHideRequestLimit(hideRequestLimit);
+		return this;
+	}
 
-		JSONObject request = new JSONObject();
-		request.put("method", "auth.createSession");
-		request.put("params", params);
-		jsonClient.post(API_RESOURCE, request, callback);
+	public boolean isHidingRequestLimit() {
+		return saploConnection.isHidingRequestLimit();
 	}
 
 }
