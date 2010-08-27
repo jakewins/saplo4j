@@ -9,20 +9,26 @@ import com.voltvoodoo.saplo4j.exception.SaploException;
 import com.voltvoodoo.saplo4j.exception.SaploGeneralException;
 import com.voltvoodoo.saplo4j.exception.SaploMatchException;
 import com.voltvoodoo.saplo4j.exception.SaploTagException;
+import com.voltvoodoo.saplo4j.http.SaploRequest;
 
 public class SaploDataUtils {
 
 	public static JSONObject parseSaploResponse(Object result)
 			throws SaploException {
+		return parseSaploResponse(result, null);
+	}
+
+	public static JSONObject parseSaploResponse(Object response,
+			SaploRequest request) throws SaploException {
 
 		// Check for errors
-		JSONObject jsonResult = (JSONObject) result;
+		JSONObject jsonResult = (JSONObject) response;
 
 		if (jsonResult == null) {
 
 			// Server returned non-json response
-			throw new SaploGeneralException(
-					"Saplo API returned a non-JSON response.");
+			throw new SaploGeneralException(-1,
+					"Saplo API returned a non-JSON response.", request, null);
 
 		} else if (jsonResult.containsKey("error")) {
 
@@ -42,19 +48,26 @@ public class SaploDataUtils {
 			errorMessage = "(" + errorCode + ") " + errorMessage;
 
 			if (errorCode < 1100) {
-				throw new SaploGeneralException(errorCode, errorMessage);
+				throw new SaploGeneralException(errorCode, errorMessage,
+						request, null);
 			} else if (errorCode < 1200) {
-				throw new SaploAuthException(errorCode, errorMessage);
+				throw new SaploAuthException(errorCode, errorMessage, request,
+						null);
 			} else if (errorCode < 1300) {
-				throw new SaploCorpusException(errorCode, errorMessage);
+				throw new SaploCorpusException(errorCode, errorMessage,
+						request, null);
 			} else if (errorCode < 1400) {
-				throw new SaploTagException(errorCode, errorMessage);
+				throw new SaploTagException(errorCode, errorMessage, request,
+						null);
 			} else if (errorCode < 1500) {
-				throw new SaploContextException(errorCode, errorMessage);
+				throw new SaploContextException(errorCode, errorMessage,
+						request, null);
 			} else if (errorCode < 1600) {
-				throw new SaploMatchException(errorCode, errorMessage);
+				throw new SaploMatchException(errorCode, errorMessage, request,
+						null);
 			} else {
-				throw new SaploGeneralException(errorCode, errorMessage);
+				throw new SaploGeneralException(errorCode, errorMessage,
+						request, null);
 			}
 
 		}

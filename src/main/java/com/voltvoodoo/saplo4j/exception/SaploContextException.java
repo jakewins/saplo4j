@@ -1,10 +1,12 @@
 package com.voltvoodoo.saplo4j.exception;
 
+import com.voltvoodoo.saplo4j.http.SaploRequest;
+
 /**
  * Exceptions related to the current context.
  * 
  * @author Jacob Hansson <jacob@voltvoodoo.com>
- *
+ * 
  */
 public class SaploContextException extends SaploException {
 
@@ -14,19 +16,24 @@ public class SaploContextException extends SaploException {
 	private static final long serialVersionUID = -1700167664444095341L;
 
 	public SaploContextException() {
-		super(-1, "", null);
+		super(-1, "", null, null);
 	}
-	
+
 	public SaploContextException(int errorCode) {
-		super(errorCode, "", null);
+		super(errorCode, "", null, null);
 	}
-	
+
 	public SaploContextException(int errorCode, String message) {
-		super(errorCode, message, null);
+		super(errorCode, message, null, null);
 	}
-	
+
 	public SaploContextException(int errorCode, String message, Throwable cause) {
-		super(errorCode, message, cause);
+		super(errorCode, message, null, cause);
 	}
-	
+
+	public SaploContextException(int errorCode, String message,
+			SaploRequest request, Throwable cause) {
+		super(errorCode, message, request, cause);
+	}
+
 }

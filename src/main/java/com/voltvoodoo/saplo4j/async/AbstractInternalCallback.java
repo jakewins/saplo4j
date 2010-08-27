@@ -8,6 +8,7 @@ import org.json.simple.JSONObject;
 
 import com.voltvoodoo.saplo4j.exception.SaploException;
 import com.voltvoodoo.saplo4j.exception.SaploGeneralException;
+import com.voltvoodoo.saplo4j.http.SaploRequest;
 
 /**
  * Parent for callbacks that are handle "raw" responses from Saplo. This class
@@ -20,10 +21,12 @@ import com.voltvoodoo.saplo4j.exception.SaploGeneralException;
  * @author Jacob Hansson <jacob@voltvoodoo.com>
  * 
  */
-public abstract class AbstractInternalCallback implements SaploCallback<Object> {
+public abstract class AbstractInternalCallback implements
+		SaploCallback<Object>, RequestAware {
 
 	protected volatile boolean gotResponse = false;
 	protected volatile boolean alive = true;
+	protected volatile SaploRequest request;
 
 	//
 	// PUBLIC
@@ -42,11 +45,11 @@ public abstract class AbstractInternalCallback implements SaploCallback<Object> 
 		gotResponse = true;
 	}
 
-	public void onSuccess(Object result) {
+	public void onSuccess(Object response) {
 
 		if (alive) {
 			try {
-				onSuccessfulResponse(parseSaploResponse(result));
+				onSuccessfulResponse(parseSaploResponse(response, request));
 			} catch (SaploException e) {
 				onFailedResponse(e);
 			}
@@ -77,5 +80,17 @@ public abstract class AbstractInternalCallback implements SaploCallback<Object> 
 				break;
 			}
 		}
+	}
+
+	//
+	// REQUEST AWARENESS
+	//
+
+	public void setSaploRequest(SaploRequest request) {
+		this.request = request;
+	}
+
+	public SaploRequest getSaploRequest() {
+		return this.request;
 	}
 }

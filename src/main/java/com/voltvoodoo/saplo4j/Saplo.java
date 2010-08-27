@@ -177,7 +177,7 @@ public class Saplo {
 		GetSimilarDocumentsCallback cb = new GetSimilarDocumentsCallback(this,
 				id, corpusId, searchIn);
 		call("match.getSimilarArticles",
-				jsonParams(corpusId, id, searchIn, MAX_WAIT_SECONDS), cb);
+				jsonParams(corpusId, id, MAX_WAIT_SECONDS, 50, 0.1, 1.0), cb);
 
 		while (cb.exception == null && cb.similarDocuments == null) {
 			cb.awaitResponse(MAX_WAIT_SECONDS * 1000);

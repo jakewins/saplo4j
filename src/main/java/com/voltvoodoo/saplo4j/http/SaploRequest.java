@@ -3,7 +3,7 @@ package com.voltvoodoo.saplo4j.http;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import com.voltvoodoo.saplo4j.Saplo;
+import com.voltvoodoo.saplo4j.async.RequestAware;
 import com.voltvoodoo.saplo4j.async.SaploCallback;
 
 /**
@@ -20,7 +20,6 @@ public class SaploRequest {
 
 	private String method;
 	private Object params = new JSONArray();
-	private Saplo saplo;
 	private SaploCallback<Object> callback;
 
 	public SaploRequest(String method, Object params,
@@ -28,6 +27,10 @@ public class SaploRequest {
 
 		this.method = method;
 		this.callback = callback;
+
+		if (callback instanceof RequestAware) {
+			((RequestAware) callback).setSaploRequest(this);
+		}
 
 		if (params != null) {
 			this.params = params;
