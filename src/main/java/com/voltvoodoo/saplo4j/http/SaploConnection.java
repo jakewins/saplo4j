@@ -86,7 +86,7 @@ public class SaploConnection {
 		CloseSessionCallback cb = new CloseSessionCallback();
 
 		pendingRequests.clear();
-		call(new SaploRequest("auth.killSession", null, cb));
+		call(new SaploRequest("auth.killSession", null, cb, this));
 
 		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
 

@@ -39,7 +39,9 @@ public abstract class AbstractInternalCallback implements
 	public void onFailure(SaploException exception) {
 
 		if (alive) {
-			onFailedResponse(exception);
+			if (!handleTimeoutExceptions(exception)) {
+				onFailedResponse(exception);
+			}
 		}
 
 		gotResponse = true;
@@ -51,7 +53,9 @@ public abstract class AbstractInternalCallback implements
 			try {
 				onSuccessfulResponse(parseSaploResponse(response, request));
 			} catch (SaploException e) {
-				onFailedResponse(e);
+				if (!handleTimeoutExceptions(e)) {
+					onFailedResponse(e);
+				}
 			}
 		}
 
@@ -92,5 +96,24 @@ public abstract class AbstractInternalCallback implements
 
 	public SaploRequest getSaploRequest() {
 		return this.request;
+	}
+
+	//
+	// INTERNALS
+	//
+
+	private boolean handleTimeoutExceptions(SaploException exception) {
+		if (exception.getErrorCode() == 1004
+				|| exception.getErrorCode() == 1005) {
+			// Saplo is still working, send request again.
+			try {
+				getSaploRequest().replay();
+				return true;
+			} catch (SaploException e) {
+
+			}
+		}
+
+		return false;
 	}
 }

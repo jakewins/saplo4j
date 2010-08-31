@@ -8,7 +8,6 @@ import java.util.List;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import com.voltvoodoo.saplo4j.Saplo;
 import com.voltvoodoo.saplo4j.async.AbstractInternalCallback;
 import com.voltvoodoo.saplo4j.async.SaploCallback;
 import com.voltvoodoo.saplo4j.exception.SaploException;
@@ -24,31 +23,24 @@ public class GetSimilarDocumentsCallback extends AbstractInternalCallback {
 	protected SaploCallback<ArrayList<SaploSimilarity>> userCallback;
 	protected SaploDocument.Id sourceDocumentId;
 	protected SaploCorpus.Id sourceCorpusId;
-	protected Saplo saplo;
 	protected List<SaploCorpus.Id> searchIn;
 
 	//
 	// CONSTRUCTORS
 	//
 
-	public GetSimilarDocumentsCallback(Saplo saplo,
-			SaploDocument.Id sourceDocumentId, SaploCorpus.Id sourceCorpusId,
-			List<SaploCorpus.Id> searchIn) {
-		this.saplo = saplo;
+	public GetSimilarDocumentsCallback(SaploDocument.Id sourceDocumentId,
+			SaploCorpus.Id sourceCorpusId) {
 		this.sourceCorpusId = sourceCorpusId;
 		this.sourceDocumentId = sourceDocumentId;
-		this.searchIn = searchIn;
 	}
 
-	public GetSimilarDocumentsCallback(Saplo saplo,
-			SaploDocument.Id sourceDocumentId, SaploCorpus.Id sourceCorpusId,
-			List<SaploCorpus.Id> searchIn,
+	public GetSimilarDocumentsCallback(SaploDocument.Id sourceDocumentId,
+			SaploCorpus.Id sourceCorpusId,
 			SaploCallback<ArrayList<SaploSimilarity>> userCallback) {
-		this.saplo = saplo;
 		this.userCallback = userCallback;
 		this.sourceCorpusId = sourceCorpusId;
 		this.sourceDocumentId = sourceDocumentId;
-		this.searchIn = searchIn;
 	}
 
 	//
@@ -57,17 +49,7 @@ public class GetSimilarDocumentsCallback extends AbstractInternalCallback {
 
 	@SuppressWarnings("unchecked")
 	public void onFailedResponse(SaploException exception) {
-		if (exception.getErrorCode() == 1004
-				|| exception.getErrorCode() == 1005) {
-			// Saplo is still working, send request again.
-			try {
-				this.saplo.call("match.getSimilarArticles",
-						jsonParams(sourceCorpusId, sourceDocumentId, searchIn),
-						this);
-			} catch (SaploException e) {
-				this.onFailedResponse(e);
-			}
-		} else if (exception.getErrorCode() == 1501) {
+		if (exception.getErrorCode() == 1501) {
 			// No results found, trigger successful response with empty result
 			// XXX: Triggering an error on empty results is behavior that is due
 			// to change in the next iteration of the Saplo API
@@ -101,7 +83,8 @@ public class GetSimilarDocumentsCallback extends AbstractInternalCallback {
 				resultValue = (Double) resultValueObject;
 			}
 
-			similarDocuments.add(new SaploSimilarity(sourceDocumentId,
+			similarDocuments.add(new SaploSimilarity(new SaploSimilarity.Id(
+					(Long) jsonDocument.get("matchId")), sourceDocumentId,
 					sourceCorpusId, new SaploDocument.Id((Long) jsonDocument
 							.get("resultArticleId")), new SaploCorpus.Id(
 							(Long) jsonDocument.get("resultCorpusId")),

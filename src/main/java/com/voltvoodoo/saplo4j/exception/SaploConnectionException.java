@@ -3,7 +3,6 @@ package com.voltvoodoo.saplo4j.exception;
 import com.voltvoodoo.saplo4j.http.SaploRequest;
 
 /**
- * Exceptions related to the current context.
  * 
  * @author Jacob Hansson <jacob@voltvoodoo.com>
  * 

@@ -9,6 +9,7 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.json.simple.JSONValue;
 
 import com.voltvoodoo.saplo4j.async.SaploCallback;
+import com.voltvoodoo.saplo4j.exception.SaploConnectionException;
 
 public class JsonResponseHandler extends SimpleChannelUpstreamHandler {
 
@@ -30,19 +31,12 @@ public class JsonResponseHandler extends SimpleChannelUpstreamHandler {
 		if (content.readable()) {
 			Object result = JSONValue.parse(content.toString("UTF-8"));
 
-			if (result == null) {
-				// System.out.println("SAPLO ERROR, unparseable response.");
-				// System.out.println("OUR REQUEST:");
-				// System.out.println(requestData);
-				// System.out.println("SAPLO RESPONSE:");
-				// System.out.println(content.toString("UTF-8"));
-			}
-
 			callback.onSuccess(result);
 		}
 	}
 
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-		e.getCause().printStackTrace();
+		callback.onFailure(new SaploConnectionException(
+				"Low-level network exception, see nested.", e.getCause()));
 	}
 }
