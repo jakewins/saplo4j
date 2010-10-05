@@ -8,6 +8,7 @@ import java.util.List;
 import com.voltvoodoo.saplo4j.async.SaploCallback;
 import com.voltvoodoo.saplo4j.async.impl.AddDocumentCallback;
 import com.voltvoodoo.saplo4j.async.impl.CreateCorpusCallback;
+import com.voltvoodoo.saplo4j.async.impl.DeleteCorpusCallback;
 import com.voltvoodoo.saplo4j.async.impl.DeleteMatchCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetDocumentCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetEntityTagsCallback;
@@ -83,6 +84,20 @@ public class Saplo {
 			return cb.corpusId;
 		} else {
 			throw cb.exception;
+		}
+	}
+	
+	public boolean deleteCorpus(SaploCorpus.Id id) throws SaploException {
+		
+		DeleteCorpusCallback cb = new DeleteCorpusCallback();
+		call("corpus.deleteCorpus", jsonParams(id), cb);
+		
+		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
+		
+		if(cb.exception != null) {
+			throw cb.exception;
+		} else {
+			return cb.result;
 		}
 	}
 

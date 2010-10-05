@@ -37,7 +37,11 @@ public abstract class AbstractId implements Serializable, Comparable<AbstractId>
 	//
 	
 	public String toString() { 
-		return id.toString(); 
+		if(id != null) {
+			return id.toString();
+		} else {
+			return "null";
+		}
 	}
 	
 	public String toJSONString() {

@@ -148,9 +148,13 @@ public class JsonClient {
 				request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING,
 						HttpHeaders.Values.GZIP);
 
+
+				System.out.println(method + " " + resource);
 				if (method == HttpMethod.POST || method == HttpMethod.PUT) {
 					if (data != null) {
-
+						
+						System.out.println(data.toString());
+						
 						byte[] binaryData = binaryJSON(data);
 						ChannelBuffer buffer = ChannelBuffers
 								.buffer(binaryData.length);
@@ -159,7 +163,7 @@ public class JsonClient {
 						request.setHeader(HttpHeaders.Names.CONTENT_LENGTH,
 								String.valueOf(binaryData.length));
 						request.setContent(buffer);
-
+						
 					} else {
 						request.setHeader(HttpHeaders.Names.CONTENT_LENGTH, "0");
 						request.setContent(null);

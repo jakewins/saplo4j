@@ -8,7 +8,7 @@ import com.voltvoodoo.saplo4j.http.SaploRequest;
  * @author Jacob Hansson <jacob@voltvoodoo.com>
  * 
  */
-public abstract class SaploException extends Exception {
+public abstract class SaploException extends RuntimeException {
 
 	/**
 	 * Serial No
