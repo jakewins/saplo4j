@@ -27,7 +27,7 @@ public class Language implements Serializable, JSONAware {
 	 */
 	private static final long serialVersionUID = -2442762969929206780L;
 	
-	protected Language(String code) {
+	public Language(String code) {
 		this.code = code;
 	}
 	
@@ -41,6 +41,10 @@ public class Language implements Serializable, JSONAware {
 
 	public String toJSONString() {
 		return toString();
+	}
+	
+	public boolean equals(Language other) {
+		return other.toString().equals(this.toString());
 	}
 	
 }

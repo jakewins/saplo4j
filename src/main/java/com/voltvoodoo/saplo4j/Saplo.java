@@ -10,13 +10,14 @@ import com.voltvoodoo.saplo4j.async.impl.AddDocumentCallback;
 import com.voltvoodoo.saplo4j.async.impl.CreateCorpusCallback;
 import com.voltvoodoo.saplo4j.async.impl.DeleteCorpusCallback;
 import com.voltvoodoo.saplo4j.async.impl.DeleteMatchCallback;
+import com.voltvoodoo.saplo4j.async.impl.GetCorpusIdsCallback;
+import com.voltvoodoo.saplo4j.async.impl.GetCorpusInfoCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetDocumentCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetEntityTagsCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetMatchCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetSimilarDocumentsCallback;
 import com.voltvoodoo.saplo4j.async.impl.UpdateDocumentCallback;
 import com.voltvoodoo.saplo4j.exception.SaploConnectionException;
-import com.voltvoodoo.saplo4j.exception.SaploException;
 import com.voltvoodoo.saplo4j.http.SaploConnection;
 import com.voltvoodoo.saplo4j.http.SaploRequest;
 import com.voltvoodoo.saplo4j.model.Language;
@@ -53,7 +54,7 @@ public class Saplo {
 	// CONSTRUCTORS
 	//
 
-	public Saplo(String apiKey, String secretKey) throws SaploException {
+	public Saplo(String apiKey, String secretKey) {
 		saploConnection = new SaploConnection(apiKey, secretKey, SAPLO_URL,
 				API_RESOURCE);
 
@@ -64,7 +65,7 @@ public class Saplo {
 	// CONNECTION MANAGEMENT
 	//
 
-	public void close() throws SaploException {
+	public void close() {
 		saploConnection.close();
 	}
 
@@ -73,7 +74,7 @@ public class Saplo {
 	// Synchronous
 
 	public SaploCorpus.Id createCorpus(String name, String description,
-			Language lang) throws SaploException {
+			Language lang) {
 
 		CreateCorpusCallback cb = new CreateCorpusCallback();
 		call("corpus.createCorpus", jsonParams(name, description, lang), cb);
@@ -86,18 +87,50 @@ public class Saplo {
 			throw cb.exception;
 		}
 	}
-	
-	public boolean deleteCorpus(SaploCorpus.Id id) throws SaploException {
-		
+
+	public boolean deleteCorpus(SaploCorpus.Id id) {
+
 		DeleteCorpusCallback cb = new DeleteCorpusCallback();
 		call("corpus.deleteCorpus", jsonParams(id), cb);
-		
+
 		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
-		
-		if(cb.exception != null) {
+
+		if (cb.exception != null) {
 			throw cb.exception;
 		} else {
 			return cb.result;
+		}
+	}
+
+	public List<SaploCorpus> getAllCorpuses() {
+
+		GetCorpusIdsCallback idCb = new GetCorpusIdsCallback();
+		call("corpus.getPermissions", jsonParams(), idCb);
+
+		idCb.awaitResponse(MAX_WAIT_SECONDS * 1000);
+
+		if (idCb.getException() != null) {
+			throw idCb.getException();
+		}
+		
+		ArrayList<SaploCorpus> corpuses = new ArrayList<SaploCorpus>();
+		for(SaploCorpus.Id id : idCb.getCorpusIds()) {
+			corpuses.add(getCorpus(id));
+		}
+
+		return corpuses;
+	}
+	
+	public SaploCorpus getCorpus(SaploCorpus.Id id) {
+		GetCorpusInfoCallback cb = new GetCorpusInfoCallback(id);
+		call("corpus.getInfo", jsonParams(id), cb);
+
+		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
+
+		if (cb.getException() != null) {
+			throw cb.getException();
+		} else {
+			return cb.getCorpus();
 		}
 	}
 
@@ -106,7 +139,7 @@ public class Saplo {
 	// Synchronous
 
 	public SaploDocument.Id addDocument(SaploCorpus.Id corpusId,
-			String headline, String body, Language lang) throws SaploException {
+			String headline, String body, Language lang) {
 
 		AddDocumentCallback cb = new AddDocumentCallback();
 		addDocument(corpusId, headline, body, lang, cb);
@@ -120,7 +153,7 @@ public class Saplo {
 	}
 
 	public boolean updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
-			String headline, String body, Language lang) throws SaploException {
+			String headline, String body, Language lang) {
 		UpdateDocumentCallback cb = new UpdateDocumentCallback();
 		updateDocument(corpusId, id, headline, body, lang, cb);
 		cb.awaitResponse(10000);
@@ -133,7 +166,7 @@ public class Saplo {
 	}
 
 	public SaploDocument getDocument(SaploCorpus.Id corpusId,
-			SaploDocument.Id id) throws SaploException {
+			SaploDocument.Id id) {
 		GetDocumentCallback cb = new GetDocumentCallback();
 		getDocument(corpusId, id, cb);
 		cb.awaitResponse(10000);
@@ -150,21 +183,20 @@ public class Saplo {
 	// Async
 
 	public void addDocument(SaploCorpus.Id corpusId, String headline,
-			String body, Language lang, SaploCallback<SaploDocument.Id> callback)
-			throws SaploException {
+			String body, Language lang, SaploCallback<SaploDocument.Id> callback) {
 		addDocument(corpusId, headline, body, lang, new AddDocumentCallback(
 				callback));
 	}
 
 	public void updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			String headline, String body, Language lang,
-			SaploCallback<Boolean> callback) throws SaploException {
+			SaploCallback<Boolean> callback) {
 		updateDocument(corpusId, id, headline, body, lang,
 				new UpdateDocumentCallback(callback));
 	}
 
 	public void getDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
-			SaploCallback<SaploDocument> callback) throws SaploException {
+			SaploCallback<SaploDocument> callback) {
 		getDocument(corpusId, id, new GetDocumentCallback(callback));
 	}
 
@@ -173,8 +205,7 @@ public class Saplo {
 	// Underlying implementation
 
 	private void addDocument(SaploCorpus.Id corpusId, String headline,
-			String body, Language lang, AddDocumentCallback callback)
-			throws SaploException {
+			String body, Language lang, AddDocumentCallback callback) {
 		call("corpus.addArticle",
 				jsonParams(corpusId, headline, "", body, "", "", "", lang),
 				callback);
@@ -182,14 +213,14 @@ public class Saplo {
 
 	private void updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			String headline, String body, Language lang,
-			UpdateDocumentCallback callback) throws SaploException {
+			UpdateDocumentCallback callback) {
 		call("corpus.updateArticle",
 				jsonParams(corpusId, id, headline, "", body, "", "", "", lang),
 				callback);
 	}
 
 	private void getDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
-			GetDocumentCallback callback) throws SaploException {
+			GetDocumentCallback callback) {
 		call("corpus.getArticle", jsonParams(corpusId, id), callback);
 	}
 
@@ -198,7 +229,7 @@ public class Saplo {
 	// Synchronous
 
 	public ArrayList<SaploSimilarity> getSimilarDocuments(
-			SaploCorpus.Id corpusId, SaploDocument.Id id) throws SaploException {
+			SaploCorpus.Id corpusId, SaploDocument.Id id) {
 
 		GetSimilarDocumentsCallback cb = new GetSimilarDocumentsCallback(id,
 				corpusId);
@@ -217,8 +248,7 @@ public class Saplo {
 	}
 
 	public SaploSimilarity getMatch(SaploCorpus.Id corpusId,
-			SaploSimilarity.Id id, SaploDocument.Id documentId)
-			throws SaploException {
+			SaploSimilarity.Id id, SaploDocument.Id documentId) {
 
 		GetMatchCallback cb = new GetMatchCallback(corpusId, id, documentId);
 		getMatch(corpusId, id, documentId, cb);
@@ -235,7 +265,7 @@ public class Saplo {
 	}
 
 	public boolean deleteMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
-			SaploDocument.Id documentId) throws SaploException {
+			SaploDocument.Id documentId) {
 
 		DeleteMatchCallback cb = new DeleteMatchCallback();
 
@@ -259,24 +289,21 @@ public class Saplo {
 
 	public void getSimilarDocuments(SaploCorpus.Id corpusId,
 			SaploDocument.Id id,
-			SaploCallback<ArrayList<SaploSimilarity>> callback)
-			throws SaploException {
+			SaploCallback<ArrayList<SaploSimilarity>> callback) {
 
 		getSimilarDocuments(corpusId, id, new GetSimilarDocumentsCallback(id,
 				corpusId, callback));
 	}
 
 	public void getMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
-			SaploDocument.Id documentId, SaploCallback<SaploSimilarity> callback)
-			throws SaploException {
+			SaploDocument.Id documentId, SaploCallback<SaploSimilarity> callback) {
 
 		getMatch(corpusId, id, documentId, new GetMatchCallback(corpusId, id,
 				documentId, callback));
 	}
 
 	public void deleteMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
-			SaploDocument.Id documentId, SaploCallback<Boolean> callback)
-			throws SaploException {
+			SaploDocument.Id documentId, SaploCallback<Boolean> callback) {
 
 		deleteMatch(corpusId, id, documentId, new DeleteMatchCallback(callback));
 	}
@@ -286,24 +313,21 @@ public class Saplo {
 	// Underlying implementation
 
 	private void getSimilarDocuments(SaploCorpus.Id corpusId,
-			SaploDocument.Id id, GetSimilarDocumentsCallback callback)
-			throws SaploException {
+			SaploDocument.Id id, GetSimilarDocumentsCallback callback) {
 
 		call("match.getSimilarArticles",
-				jsonParams(corpusId, id, MAX_WAIT_SECONDS, 50, 0.1, 1.0),
+				jsonParams(corpusId, id, MAX_WAIT_SECONDS, 50, 0.1),
 				callback);
 	}
 
 	private void getMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
-			SaploDocument.Id documentId, GetMatchCallback callback)
-			throws SaploException {
+			SaploDocument.Id documentId, GetMatchCallback callback) {
 
 		call("match.getMatch", jsonParams(corpusId, documentId, id), callback);
 	}
 
 	private void deleteMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
-			SaploDocument.Id documentId, DeleteMatchCallback callback)
-			throws SaploException {
+			SaploDocument.Id documentId, DeleteMatchCallback callback) {
 
 		call("match.getMatch", jsonParams(corpusId, documentId, id), callback);
 	}
@@ -313,7 +337,7 @@ public class Saplo {
 	// Synchronous
 
 	public List<SaploTag> getEntityTags(SaploCorpus.Id corpusId,
-			SaploDocument.Id documentId) throws SaploException {
+			SaploDocument.Id documentId) {
 
 		GetEntityTagsCallback cb = new GetEntityTagsCallback(corpusId,
 				documentId);
@@ -337,8 +361,7 @@ public class Saplo {
 	// Async
 
 	public void getEntityTags(SaploCorpus.Id corpusId,
-			SaploDocument.Id documentId, SaploCallback<List<SaploTag>> callback)
-			throws SaploException {
+			SaploDocument.Id documentId, SaploCallback<List<SaploTag>> callback) {
 
 		getEntityTags(corpusId, documentId, new GetEntityTagsCallback(corpusId,
 				documentId, callback));
@@ -350,8 +373,7 @@ public class Saplo {
 	// Underlying implementation
 
 	private void getEntityTags(SaploCorpus.Id corpusId,
-			SaploDocument.Id documentId, GetEntityTagsCallback callback)
-			throws SaploException {
+			SaploDocument.Id documentId, GetEntityTagsCallback callback) {
 		call("tags.getEntityTags",
 				jsonParams(corpusId, documentId, MAX_WAIT_SECONDS), callback);
 	}

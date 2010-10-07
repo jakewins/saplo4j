@@ -25,18 +25,18 @@ public class SaploCorpus {
 	protected Language language;
 	protected String   name;
 	protected String   description;
-	protected int      lastArticleId;
+	protected long      nextArticleId;
 	
 	//
 	// CONSTRUCTORS
 	//
 	
-	protected SaploCorpus( Id id, Language language, String name, String description, int lastArticleId ) {
+	public SaploCorpus( Id id, Language language, String name, String description, long nextArticleId ) {
 		this.id            = id;
 		this.language      = language;
 		this.name          = name;
 		this.description   = description;
-		this.lastArticleId = lastArticleId;
+		this.nextArticleId = nextArticleId;
 	}
 	
 	//
@@ -67,6 +67,6 @@ public class SaploCorpus {
 	 * Get the id of the latest article added to this corpus
 	 * @return
 	 */
-	public Integer getLatestArticleAddedId() { return this.lastArticleId; }
+	public Long getNextArticleAddedId() { return this.nextArticleId; }
 	
 }
