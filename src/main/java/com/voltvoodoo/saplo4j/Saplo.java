@@ -9,6 +9,7 @@ import com.voltvoodoo.saplo4j.async.SaploCallback;
 import com.voltvoodoo.saplo4j.async.impl.AddDocumentCallback;
 import com.voltvoodoo.saplo4j.async.impl.CreateCorpusCallback;
 import com.voltvoodoo.saplo4j.async.impl.DeleteCorpusCallback;
+import com.voltvoodoo.saplo4j.async.impl.DeleteDocumentCallback;
 import com.voltvoodoo.saplo4j.async.impl.DeleteMatchCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetCorpusIdsCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetCorpusInfoCallback;
@@ -178,6 +179,19 @@ public class Saplo {
 		}
 	}
 
+	public Boolean deleteDocument(SaploCorpus.Id corpusId, SaploDocument.Id id) {
+		DeleteDocumentCallback cb = new DeleteDocumentCallback();
+		
+		deleteDocument(corpusId, id, cb);
+		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
+		
+		if(cb.getException() == null) {
+			return true;
+		} else {
+			throw cb.getException();
+		}
+	}
+
 	//
 	// DOCUMENT MANAGEMENT API
 	// Async
@@ -199,6 +213,11 @@ public class Saplo {
 			SaploCallback<SaploDocument> callback) {
 		getDocument(corpusId, id, new GetDocumentCallback(callback));
 	}
+	
+	public void deleteDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
+			SaploCallback<Boolean> callback) {
+		deleteDocument(corpusId, id, new DeleteDocumentCallback(callback));
+	}
 
 	//
 	// DOCUMENT MANAGEMENT API
@@ -216,6 +235,13 @@ public class Saplo {
 			UpdateDocumentCallback callback) {
 		call("corpus.updateArticle",
 				jsonParams(corpusId, id, headline, "", body, "", "", "", lang),
+				callback);
+	}
+	
+	private void deleteDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
+			DeleteDocumentCallback callback) {
+		call("corpus.deleteArticle",
+				jsonParams(corpusId, id), 
 				callback);
 	}
 
