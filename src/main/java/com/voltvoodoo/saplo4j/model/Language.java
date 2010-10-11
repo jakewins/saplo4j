@@ -15,7 +15,7 @@ import org.json.simple.JSONAware;
 public class Language implements Serializable, JSONAware {
 
 	public static Language ENGLISH = new Language("en");
-	public static Language SWEDISH = new Language("se");
+	public static Language SWEDISH = new Language("sv");
 	
 	/**
 	 * Actual language code used by SAPLO

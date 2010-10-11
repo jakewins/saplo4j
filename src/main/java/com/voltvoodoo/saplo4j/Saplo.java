@@ -316,7 +316,7 @@ public class Saplo {
 			SaploDocument.Id id, GetSimilarDocumentsCallback callback) {
 
 		call("match.getSimilarArticles",
-				jsonParams(corpusId, id, MAX_WAIT_SECONDS, 50, 0.1),
+				jsonParams(corpusId, id, MAX_WAIT_SECONDS, 50, 0.1, 1.0),
 				callback);
 	}
 
