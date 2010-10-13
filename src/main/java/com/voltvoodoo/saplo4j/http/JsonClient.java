@@ -153,7 +153,7 @@ public class JsonClient {
 				if (method == HttpMethod.POST || method == HttpMethod.PUT) {
 					if (data != null) {
 						
-						//System.out.println(data.toString());
+						//System.out.println(method + ": " + data.toString());
 						
 						byte[] binaryData = binaryJSON(data);
 						ChannelBuffer buffer = ChannelBuffers

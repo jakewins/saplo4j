@@ -36,6 +36,7 @@ public class JsonResponseHandler extends SimpleChannelUpstreamHandler {
 	}
 
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
+		e.getCause().printStackTrace();
 		callback.onFailure(new SaploConnectionException(
 				"Low-level network exception, see nested.", e.getCause()));
 	}
