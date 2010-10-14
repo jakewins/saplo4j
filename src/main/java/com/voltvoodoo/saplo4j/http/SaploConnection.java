@@ -30,6 +30,9 @@ public class SaploConnection {
 	 * If this is set to true, no requests will be sent to the Saplo server.
 	 * Instead, requests made will pile up until there are more API requests
 	 * available from Saplo.
+	 * 
+	 * This behavior is enabled by {@link #setHideRequestLimit(boolean)} to
+	 * true.
 	 */
 	private boolean requestLimitReached = false;
 
@@ -66,50 +69,66 @@ public class SaploConnection {
 
 	public SaploConnection open() throws SaploException {
 
-		// Init session
-		CreateSessionCallback cb = new CreateSessionCallback();
-		initSession(apiKey, secretKey, cb);
+		if (!isOpen()) {
+			// Init session
+			CreateSessionCallback cb = new CreateSessionCallback();
+			initSession(apiKey, secretKey, cb);
 
-		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
+			cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
 
-		if (cb.exception != null) {
-			throw cb.exception;
-		} else {
-			this.sessionId = cb.sessionId;
+			if (cb.exception != null) {
+				throw cb.exception;
+			} else {
+				this.sessionId = cb.sessionId;
+			}
 		}
-
 		return this;
 
 	}
 
 	public SaploConnection close() throws SaploException {
-		CloseSessionCallback cb = new CloseSessionCallback();
+		if (isOpen()) {
+			CloseSessionCallback cb = new CloseSessionCallback();
 
-		pendingRequests.clear();
-		call(new SaploRequest("auth.killSession", null, cb, this));
+			pendingRequests.clear();
+			call(new SaploRequest("auth.killSession", null, cb, this));
 
-		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
+			cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
 
+			this.sessionId = null;
+
+		}
 		return this;
 	}
 
 	public SaploConnection call(SaploRequest request)
 			throws SaploConnectionException {
 
-		if (requestLimitReached) {
-			pendingRequests.add(request);
-		} else {
+		if (isOpen()) {
 
-			SaploCallback<Object> callback = request.getCallback();
+			if (requestLimitReached) {
+				pendingRequests.add(request);
+			} else {
 
-			if (hideRequestLimit) {
-				callback = new RequestLimitWrapper(request, this);
+				SaploCallback<Object> callback = request.getCallback();
+
+				if (hideRequestLimit) {
+					callback = new RequestLimitWrapper(request, this);
+				}
+
+				jsonClient.post(apiResource + ";jsessionid=" + sessionId,
+						request.getRequestData(), callback);
 			}
 
-			jsonClient.post(apiResource + ";jsessionid=" + sessionId,
-					request.getRequestData(), callback);
+			return this;
+		} else {
+			throw new SaploConnectionException("The session is closed.");
 		}
-		return this;
+
+	}
+
+	public boolean isOpen() {
+		return sessionId != null;
 	}
 
 	//

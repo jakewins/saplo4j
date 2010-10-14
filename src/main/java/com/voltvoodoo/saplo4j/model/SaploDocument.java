@@ -1,8 +1,9 @@
 package com.voltvoodoo.saplo4j.model;
 
 /**
- * A document retrieved through the Saplo API. This class cannot
- * be instantiated, but must be created via {@link com.voltvoodoo.saplo4j.Saplo}
+ * A document retrieved through the Saplo API. This class is normally
+ * created via {@link com.voltvoodoo.saplo4j.Saplo#addDocument(com.voltvoodoo.saplo4j.model.SaploCorpus.Id, String, String, Language)}
+ * 
  * Instances of this class are immutable.
  * 
  * @author Jacob Hansson <jacob@voltvoodoo.com>
@@ -22,17 +23,17 @@ public class SaploDocument {
 	protected Id id;
 	protected SaploCorpus.Id corpusId;
 	protected String headline;
-	protected String url;
+	protected String meta;
 	
 	//
 	// CONSTRUCTORS
 	//
 	
-	public SaploDocument(Id id, SaploCorpus.Id corpusId, String headline, String url) {
+	public SaploDocument(Id id, SaploCorpus.Id corpusId, String headline, String meta) {
 		this.id = id;
 		this.corpusId = corpusId;
 		this.headline = headline;
-		this.url = url;
+		this.meta = meta;
 	}
 	
 	//
@@ -42,6 +43,6 @@ public class SaploDocument {
 	public Id getId() { return this.id; }
 	public SaploCorpus.Id getCorpusId() { return this.corpusId; }
 	public String getHeadline() { return this.headline; }
-	public String getUrl() { return this.url; }
+	public String getMeta() { return this.meta; }
 	
 }

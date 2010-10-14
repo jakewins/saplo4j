@@ -31,7 +31,7 @@ import com.voltvoodoo.saplo4j.model.SaploTag;
  * Java API for Saplo semantic analysis service.
  * 
  * Almost all of the methods within the API come in two versions, a synchronous
- * one and an asynchronous one. The asynchrounous API is, of course, a magnitude
+ * one and an asynchronous one. The asynchronous API is, of course, a lot
  * faster when it comes to handling many calls at the same time and is most
  * often to be preferred.
  * 
@@ -55,6 +55,12 @@ public class Saplo {
 	// CONSTRUCTORS
 	//
 
+	/**
+	 * Create a new Saplo client. This instantly creates a new Saplo session.
+	 * Don't forgot to call Saplo.close when you are done.
+	 * @param apiKey Your Saplo API key
+	 * @param secretKey Your Saplo Secret API key
+	 */
 	public Saplo(String apiKey, String secretKey) {
 		saploConnection = new SaploConnection(apiKey, secretKey, SAPLO_URL,
 				API_RESOURCE);
@@ -66,14 +72,37 @@ public class Saplo {
 	// CONNECTION MANAGEMENT
 	//
 
+	/**
+	 * Call this to finish the Saplo session.
+	 */
 	public void close() {
 		saploConnection.close();
+	}
+	
+	/**
+	 * Call this to open the Saplo session. A session is opened
+	 * by default when you instantiate this class, so the only use for
+	 * this is if you have closed the session and want to open a new one.
+	 */
+	public void open() {
+		saploConnection.open();
 	}
 
 	//
 	// CORPUS MANAGEMENT API
-	// Synchronous
+	// 
 
+	/**
+	 * Create a new Saplo corpus. A corpus is a container where you put your documents.
+	 * When you do similarity matching et cetera, you decide on a per-corpus level what
+	 * documents should be included in the results.
+	 * 
+	 * @param name A human-readable name of the corpus
+	 * @param description A human-readable description of the contents of the corpus.
+	 * @param lang The language of the documents that will be put in the corpus.
+	 * 
+	 * @return a globally unique id of the new corpus
+	 */
 	public SaploCorpus.Id createCorpus(String name, String description,
 			Language lang) {
 
@@ -89,6 +118,11 @@ public class Saplo {
 		}
 	}
 
+	/**
+	 * Remove a corpus
+	 * @param id The id of the corpus to remove
+	 * @return
+	 */
 	public boolean deleteCorpus(SaploCorpus.Id id) {
 
 		DeleteCorpusCallback cb = new DeleteCorpusCallback();
@@ -103,6 +137,10 @@ public class Saplo {
 		}
 	}
 
+	/**
+	 * Get a list of all your corpuses.
+	 * @return A list of all your corpuses.
+	 */
 	public List<SaploCorpus> getAllCorpuses() {
 
 		GetCorpusIdsCallback idCb = new GetCorpusIdsCallback();
@@ -122,6 +160,12 @@ public class Saplo {
 		return corpuses;
 	}
 	
+	/**
+	 * Get a single corpus given its id. This will give you access to information 
+	 * like name, description, language and next document id to be assigned.
+	 * @param id Id of the corpus you want to retrieve.
+	 * @return
+	 */
 	public SaploCorpus getCorpus(SaploCorpus.Id id) {
 		GetCorpusInfoCallback cb = new GetCorpusInfoCallback(id);
 		call("corpus.getInfo", jsonParams(id), cb);
@@ -141,9 +185,14 @@ public class Saplo {
 
 	public SaploDocument.Id addDocument(SaploCorpus.Id corpusId,
 			String headline, String body, Language lang) {
+		return addDocument(corpusId, headline, body, "", lang);
+	}
+	
+	public SaploDocument.Id addDocument(SaploCorpus.Id corpusId,
+			String headline, String body, String meta, Language lang) {
 
 		AddDocumentCallback cb = new AddDocumentCallback();
-		addDocument(corpusId, headline, body, lang, cb);
+		addDocument(corpusId, headline, body, meta, lang, cb);
 		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
 
 		if (cb.documentId != null) {
@@ -155,8 +204,13 @@ public class Saplo {
 
 	public boolean updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			String headline, String body, Language lang) {
+		return updateDocument(corpusId, id, headline, body, "", lang);
+	}
+	
+	public boolean updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
+			String headline, String body, String meta, Language lang) {
 		UpdateDocumentCallback cb = new UpdateDocumentCallback();
-		updateDocument(corpusId, id, headline, body, lang, cb);
+		updateDocument(corpusId, id, headline, body, meta, lang, cb);
 		cb.awaitResponse(10000);
 
 		if (cb.exception == null) {
@@ -198,14 +252,24 @@ public class Saplo {
 
 	public void addDocument(SaploCorpus.Id corpusId, String headline,
 			String body, Language lang, SaploCallback<SaploDocument.Id> callback) {
-		addDocument(corpusId, headline, body, lang, new AddDocumentCallback(
-				callback));
+		addDocument(corpusId, headline, body, "", lang, callback);
+	}
+	
+	public void addDocument(SaploCorpus.Id corpusId, String headline,
+			String body, String meta, Language lang, SaploCallback<SaploDocument.Id> callback) {
+		addDocument(corpusId, headline, body, meta, lang, callback);
 	}
 
 	public void updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			String headline, String body, Language lang,
 			SaploCallback<Boolean> callback) {
-		updateDocument(corpusId, id, headline, body, lang,
+		updateDocument(corpusId, id, headline, body, "", lang, callback);
+	}
+	
+	public void updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
+			String headline, String body, String meta, Language lang,
+			SaploCallback<Boolean> callback) {
+		updateDocument(corpusId, id, headline, body, meta, lang,
 				new UpdateDocumentCallback(callback));
 	}
 
@@ -217,37 +281,6 @@ public class Saplo {
 	public void deleteDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			SaploCallback<Boolean> callback) {
 		deleteDocument(corpusId, id, new DeleteDocumentCallback(callback));
-	}
-
-	//
-	// DOCUMENT MANAGEMENT API
-	// Underlying implementation
-
-	private void addDocument(SaploCorpus.Id corpusId, String headline,
-			String body, Language lang, AddDocumentCallback callback) {
-		call("corpus.addArticle",
-				jsonParams(corpusId, headline, "", body, "", "", "", lang),
-				callback);
-	}
-
-	private void updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
-			String headline, String body, Language lang,
-			UpdateDocumentCallback callback) {
-		call("corpus.updateArticle",
-				jsonParams(corpusId, id, headline, "", body, "", "", "", lang),
-				callback);
-	}
-	
-	private void deleteDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
-			DeleteDocumentCallback callback) {
-		call("corpus.deleteArticle",
-				jsonParams(corpusId, id), 
-				callback);
-	}
-
-	private void getDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
-			GetDocumentCallback callback) {
-		call("corpus.getArticle", jsonParams(corpusId, id), callback);
 	}
 
 	//
@@ -335,30 +368,6 @@ public class Saplo {
 	}
 
 	//
-	// MATCH API
-	// Underlying implementation
-
-	private void getSimilarDocuments(SaploCorpus.Id corpusId,
-			SaploDocument.Id id, GetSimilarDocumentsCallback callback) {
-
-		call("match.getSimilarArticles",
-				jsonParams(corpusId, id, MAX_WAIT_SECONDS, 50, 0.1, 1.0),
-				callback);
-	}
-
-	private void getMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
-			SaploDocument.Id documentId, GetMatchCallback callback) {
-
-		call("match.getMatch", jsonParams(corpusId, documentId, id), callback);
-	}
-
-	private void deleteMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
-			SaploDocument.Id documentId, DeleteMatchCallback callback) {
-
-		call("match.getMatch", jsonParams(corpusId, documentId, id), callback);
-	}
-
-	//
 	// TAG API
 	// Synchronous
 
@@ -393,17 +402,7 @@ public class Saplo {
 				documentId, callback));
 
 	}
-
-	//
-	// TAG API
-	// Underlying implementation
-
-	private void getEntityTags(SaploCorpus.Id corpusId,
-			SaploDocument.Id documentId, GetEntityTagsCallback callback) {
-		call("tags.getEntityTags",
-				jsonParams(corpusId, documentId, MAX_WAIT_SECONDS), callback);
-	}
-
+	
 	//
 	// OTHER
 	//
@@ -450,12 +449,13 @@ public class Saplo {
 	//
 
 	/**
-	 * This is used to "hide" API request limit reached errors. In essesence,
-	 * set this to true and you will not get those error. When a request limit
-	 * error is encountered, the request will be retried after an hour.
+	 * This is used to "hide" API request limit errors. In essence,
+	 * set this to true and you will not get those errors. The Saplo4j client
+	 * will automatically queue your calls and throttle them so that they do not overcome the 
+	 * per-hour API limit.
 	 * 
-	 * Turning this on will, if you are doing large amounts of requests, lead to
-	 * some requests taking up to an hour to complete.
+	 * WARNING: If you are constantly doing more calls than allowed per hour, turning
+	 * this on will lead to memory problems as the queue of calls to make grows larger.
 	 * 
 	 * Default value for this is false.
 	 */
@@ -467,5 +467,72 @@ public class Saplo {
 	public boolean isHidingRequestLimit() {
 		return saploConnection.isHidingRequestLimit();
 	}
+
+	//
+	// DOCUMENT MANAGEMENT API
+	// Underlying implementation
+
+	private void addDocument(SaploCorpus.Id corpusId, String headline,
+			String body, String meta, Language lang, AddDocumentCallback callback) {
+		call("corpus.addArticle",
+				jsonParams(corpusId, headline, "", body, "", "", "", lang),
+				callback);
+	}
+
+	private void updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
+			String headline, String body, String meta, Language lang,
+			UpdateDocumentCallback callback) {
+		call("corpus.updateArticle",
+				jsonParams(corpusId, id, headline, "", body, "", meta , "", lang),
+				callback);
+	}
+	
+	private void deleteDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
+			DeleteDocumentCallback callback) {
+		call("corpus.deleteArticle",
+				jsonParams(corpusId, id), 
+				callback);
+	}
+
+	private void getDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
+			GetDocumentCallback callback) {
+		call("corpus.getArticle", jsonParams(corpusId, id), callback);
+	}
+
+	//
+	// MATCH API
+	// Underlying implementation
+
+	private void getSimilarDocuments(SaploCorpus.Id corpusId,
+			SaploDocument.Id id, GetSimilarDocumentsCallback callback) {
+
+		call("match.getSimilarArticles",
+				jsonParams(corpusId, id, MAX_WAIT_SECONDS, 50, 0.1, 1.0),
+				callback);
+	}
+
+	private void getMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
+			SaploDocument.Id documentId, GetMatchCallback callback) {
+
+		call("match.getMatch", jsonParams(corpusId, documentId, id), callback);
+	}
+
+	private void deleteMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
+			SaploDocument.Id documentId, DeleteMatchCallback callback) {
+
+		call("match.getMatch", jsonParams(corpusId, documentId, id), callback);
+	}
+
+	//
+	// TAG API
+	// Underlying implementation
+
+	private void getEntityTags(SaploCorpus.Id corpusId,
+			SaploDocument.Id documentId, GetEntityTagsCallback callback) {
+		call("tags.getEntityTags",
+				jsonParams(corpusId, documentId, MAX_WAIT_SECONDS), callback);
+	}
+
+	
 
 }
