@@ -1,6 +1,6 @@
 package com.voltvoodoo.saplo4j.http;
 
-import static com.voltvoodoo.saplo4j.utils.SaploDataUtils.parseSaploResponse;
+import static com.voltvoodoo.saplo4j.utils.SaploResponseParser.parseSaploResponse;
 
 import com.voltvoodoo.saplo4j.async.SaploCallback;
 import com.voltvoodoo.saplo4j.exception.SaploConnectionException;

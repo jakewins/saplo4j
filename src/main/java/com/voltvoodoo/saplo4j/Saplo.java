@@ -332,7 +332,7 @@ public class Saplo {
 	public void addDocument(SaploCorpus.Id corpusId, String headline,
 			String body, String meta, Language lang,
 			SaploCallback<SaploDocument.Id> callback) {
-		addDocument(corpusId, headline, body, meta, lang, callback);
+		addDocument(corpusId, headline, body, meta, lang, new AddDocumentCallback( callback ));
 	}
 
 	/**

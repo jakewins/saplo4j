@@ -11,7 +11,7 @@ import com.voltvoodoo.saplo4j.exception.SaploMatchException;
 import com.voltvoodoo.saplo4j.exception.SaploTagException;
 import com.voltvoodoo.saplo4j.http.SaploRequest;
 
-public class SaploDataUtils {
+public class SaploResponseParser {
 
 	public static JSONObject parseSaploResponse(Object result)
 			throws SaploException {

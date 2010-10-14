@@ -1,6 +1,6 @@
 package com.voltvoodoo.saplo4j.async;
 
-import static com.voltvoodoo.saplo4j.utils.SaploDataUtils.parseSaploResponse;
+import static com.voltvoodoo.saplo4j.utils.SaploResponseParser.parseSaploResponse;
 
 import java.util.Date;
 
