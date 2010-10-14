@@ -31,9 +31,9 @@ import com.voltvoodoo.saplo4j.model.SaploTag;
  * Java API for Saplo semantic analysis service.
  * 
  * Almost all of the methods within the API come in two versions, a synchronous
- * one and an asynchronous one. The asynchronous API is, of course, a lot
- * faster when it comes to handling many calls at the same time and is most
- * often to be preferred.
+ * one and an asynchronous one. The asynchronous API is, of course, a lot faster
+ * when it comes to handling many calls at the same time and is most often to be
+ * preferred.
  * 
  * The synchronous API is convenient when you handle few requests and don't want
  * to deal with concurrency problems and creating callbacks.
@@ -58,8 +58,11 @@ public class Saplo {
 	/**
 	 * Create a new Saplo client. This instantly creates a new Saplo session.
 	 * Don't forgot to call Saplo.close when you are done.
-	 * @param apiKey Your Saplo API key
-	 * @param secretKey Your Saplo Secret API key
+	 * 
+	 * @param apiKey
+	 *            Your Saplo API key
+	 * @param secretKey
+	 *            Your Saplo Secret API key
 	 */
 	public Saplo(String apiKey, String secretKey) {
 		saploConnection = new SaploConnection(apiKey, secretKey, SAPLO_URL,
@@ -78,11 +81,11 @@ public class Saplo {
 	public void close() {
 		saploConnection.close();
 	}
-	
+
 	/**
-	 * Call this to open the Saplo session. A session is opened
-	 * by default when you instantiate this class, so the only use for
-	 * this is if you have closed the session and want to open a new one.
+	 * Call this to open the Saplo session. A session is opened by default when
+	 * you instantiate this class, so the only use for this is if you have
+	 * closed the session and want to open a new one.
 	 */
 	public void open() {
 		saploConnection.open();
@@ -90,16 +93,19 @@ public class Saplo {
 
 	//
 	// CORPUS MANAGEMENT API
-	// 
+	//
 
 	/**
-	 * Create a new Saplo corpus. A corpus is a container where you put your documents.
-	 * When you do similarity matching et cetera, you decide on a per-corpus level what
-	 * documents should be included in the results.
+	 * Create a new Saplo corpus. A corpus is a container where you put your
+	 * documents. When you do similarity matching et cetera, you decide on a
+	 * per-corpus level what documents should be included in the results.
 	 * 
-	 * @param name A human-readable name of the corpus
-	 * @param description A human-readable description of the contents of the corpus.
-	 * @param lang The language of the documents that will be put in the corpus.
+	 * @param name
+	 *            A human-readable name of the corpus
+	 * @param description
+	 *            A human-readable description of the contents of the corpus.
+	 * @param lang
+	 *            The language of the documents that will be put in the corpus.
 	 * 
 	 * @return a globally unique id of the new corpus
 	 */
@@ -120,7 +126,9 @@ public class Saplo {
 
 	/**
 	 * Remove a corpus
-	 * @param id The id of the corpus to remove
+	 * 
+	 * @param id
+	 *            The id of the corpus to remove
 	 * @return
 	 */
 	public boolean deleteCorpus(SaploCorpus.Id id) {
@@ -139,6 +147,7 @@ public class Saplo {
 
 	/**
 	 * Get a list of all your corpuses.
+	 * 
 	 * @return A list of all your corpuses.
 	 */
 	public List<SaploCorpus> getAllCorpuses() {
@@ -151,19 +160,22 @@ public class Saplo {
 		if (idCb.getException() != null) {
 			throw idCb.getException();
 		}
-		
+
 		ArrayList<SaploCorpus> corpuses = new ArrayList<SaploCorpus>();
-		for(SaploCorpus.Id id : idCb.getCorpusIds()) {
+		for (SaploCorpus.Id id : idCb.getCorpusIds()) {
 			corpuses.add(getCorpus(id));
 		}
 
 		return corpuses;
 	}
-	
+
 	/**
-	 * Get a single corpus given its id. This will give you access to information 
-	 * like name, description, language and next document id to be assigned.
-	 * @param id Id of the corpus you want to retrieve.
+	 * Get a single corpus given its id. This will give you access to
+	 * information like name, description, language and next document id to be
+	 * assigned.
+	 * 
+	 * @param id
+	 *            Id of the corpus you want to retrieve.
 	 * @return
 	 */
 	public SaploCorpus getCorpus(SaploCorpus.Id id) {
@@ -183,11 +195,31 @@ public class Saplo {
 	// DOCUMENT MANAGEMENT API
 	// Synchronous
 
+	/**
+	 * @see #addDocument(com.voltvoodoo.saplo4j.model.SaploCorpus.Id, String,
+	 *      String, String, Language)
+	 */
 	public SaploDocument.Id addDocument(SaploCorpus.Id corpusId,
 			String headline, String body, Language lang) {
 		return addDocument(corpusId, headline, body, "", lang);
 	}
-	
+
+	/**
+	 * Add a new document (a text) to a given corpus.
+	 * 
+	 * @param corpusId
+	 *            Is the corpus to add the document in
+	 * @param headline
+	 *            Is a headline for your document
+	 * @param body
+	 *            Is the main document text
+	 * @param meta
+	 *            Is an arbitrary String with a maximum size of 1000 chars. Use
+	 *            this to store meta data about your document.
+	 * @param lang
+	 *            Is the language of the text in the document.
+	 * @return a corpus-unique document id.
+	 */
 	public SaploDocument.Id addDocument(SaploCorpus.Id corpusId,
 			String headline, String body, String meta, Language lang) {
 
@@ -202,11 +234,31 @@ public class Saplo {
 		}
 	}
 
+	/**
+	 * @see #updateDocument(com.voltvoodoo.saplo4j.model.SaploCorpus.Id,
+	 *      com.voltvoodoo.saplo4j.model.SaploDocument.Id, String, String,
+	 *      String, Language)
+	 */
 	public boolean updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			String headline, String body, Language lang) {
 		return updateDocument(corpusId, id, headline, body, "", lang);
 	}
-	
+
+	/**
+	 * Edit the contents of an existing document.
+	 * 
+	 * @param corpusId
+	 *            Is the corpus to add the document in
+	 * @param headline
+	 *            Is a headline for your document
+	 * @param body
+	 *            Is the main document text
+	 * @param meta
+	 *            Is an arbitrary String with a maximum size of 1000 chars. Use
+	 *            this to store meta data about your document.
+	 * @param lang
+	 *            Is the language of the text in the document.
+	 */
 	public boolean updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			String headline, String body, String meta, Language lang) {
 		UpdateDocumentCallback cb = new UpdateDocumentCallback();
@@ -235,11 +287,11 @@ public class Saplo {
 
 	public Boolean deleteDocument(SaploCorpus.Id corpusId, SaploDocument.Id id) {
 		DeleteDocumentCallback cb = new DeleteDocumentCallback();
-		
+
 		deleteDocument(corpusId, id, cb);
 		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
-		
-		if(cb.getException() == null) {
+
+		if (cb.getException() == null) {
 			return true;
 		} else {
 			throw cb.getException();
@@ -250,22 +302,67 @@ public class Saplo {
 	// DOCUMENT MANAGEMENT API
 	// Async
 
+	/**
+	 * @see #addDocument(com.voltvoodoo.saplo4j.model.SaploCorpus.Id, String,
+	 *      String, String, Language, SaploCallback)
+	 */
 	public void addDocument(SaploCorpus.Id corpusId, String headline,
 			String body, Language lang, SaploCallback<SaploDocument.Id> callback) {
 		addDocument(corpusId, headline, body, "", lang, callback);
 	}
-	
+
+	/**
+	 * Add a new document (a text) to a given corpus.
+	 * 
+	 * @param corpusId
+	 *            Is the corpus to add the document in
+	 * @param headline
+	 *            Is a headline for your document
+	 * @param body
+	 *            Is the main document text
+	 * @param meta
+	 *            Is an arbitrary String with a maximum size of 1000 chars. Use
+	 *            this to store meta data about your document.
+	 * @param lang
+	 *            Is the language of the text in the document.
+	 * @param callback
+	 *            Will be called with the document id when the operation has
+	 *            completed.
+	 */
 	public void addDocument(SaploCorpus.Id corpusId, String headline,
-			String body, String meta, Language lang, SaploCallback<SaploDocument.Id> callback) {
+			String body, String meta, Language lang,
+			SaploCallback<SaploDocument.Id> callback) {
 		addDocument(corpusId, headline, body, meta, lang, callback);
 	}
 
+	/**
+	 * @see #updateDocument(com.voltvoodoo.saplo4j.model.SaploCorpus.Id,
+	 *      com.voltvoodoo.saplo4j.model.SaploDocument.Id, String, String,
+	 *      String, Language, SaploCallback)
+	 */
 	public void updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			String headline, String body, Language lang,
 			SaploCallback<Boolean> callback) {
 		updateDocument(corpusId, id, headline, body, "", lang, callback);
 	}
-	
+
+	/**
+	 * Edit the contents of an existing document.
+	 * 
+	 * @param corpusId
+	 *            Is the corpus to add the document in
+	 * @param headline
+	 *            Is a headline for your document
+	 * @param body
+	 *            Is the main document text
+	 * @param meta
+	 *            Is an arbitrary String with a maximum size of 1000 chars. Use
+	 *            this to store meta data about your document.
+	 * @param lang
+	 *            Is the language of the text in the document.
+	 * @param callback
+	 *            Will be called when the edit is complete.
+	 */
 	public void updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			String headline, String body, String meta, Language lang,
 			SaploCallback<Boolean> callback) {
@@ -277,7 +374,7 @@ public class Saplo {
 			SaploCallback<SaploDocument> callback) {
 		getDocument(corpusId, id, new GetDocumentCallback(callback));
 	}
-	
+
 	public void deleteDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			SaploCallback<Boolean> callback) {
 		deleteDocument(corpusId, id, new DeleteDocumentCallback(callback));
@@ -402,7 +499,7 @@ public class Saplo {
 				documentId, callback));
 
 	}
-	
+
 	//
 	// OTHER
 	//
@@ -449,13 +546,14 @@ public class Saplo {
 	//
 
 	/**
-	 * This is used to "hide" API request limit errors. In essence,
-	 * set this to true and you will not get those errors. The Saplo4j client
-	 * will automatically queue your calls and throttle them so that they do not overcome the 
-	 * per-hour API limit.
+	 * This is used to "hide" API request limit errors. In essence, set this to
+	 * true and you will not get those errors. The Saplo4j client will
+	 * automatically queue your calls and throttle them so that they do not
+	 * overcome the per-hour API limit.
 	 * 
-	 * WARNING: If you are constantly doing more calls than allowed per hour, turning
-	 * this on will lead to memory problems as the queue of calls to make grows larger.
+	 * WARNING: If you are constantly doing more calls than allowed per hour,
+	 * turning this on will lead to memory problems as the queue of calls to
+	 * make grows larger.
 	 * 
 	 * Default value for this is false.
 	 */
@@ -473,7 +571,8 @@ public class Saplo {
 	// Underlying implementation
 
 	private void addDocument(SaploCorpus.Id corpusId, String headline,
-			String body, String meta, Language lang, AddDocumentCallback callback) {
+			String body, String meta, Language lang,
+			AddDocumentCallback callback) {
 		call("corpus.addArticle",
 				jsonParams(corpusId, headline, "", body, "", "", "", lang),
 				callback);
@@ -483,15 +582,13 @@ public class Saplo {
 			String headline, String body, String meta, Language lang,
 			UpdateDocumentCallback callback) {
 		call("corpus.updateArticle",
-				jsonParams(corpusId, id, headline, "", body, "", meta , "", lang),
+				jsonParams(corpusId, id, headline, "", body, "", meta, "", lang),
 				callback);
 	}
-	
+
 	private void deleteDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			DeleteDocumentCallback callback) {
-		call("corpus.deleteArticle",
-				jsonParams(corpusId, id), 
-				callback);
+		call("corpus.deleteArticle", jsonParams(corpusId, id), callback);
 	}
 
 	private void getDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
@@ -532,7 +629,5 @@ public class Saplo {
 		call("tags.getEntityTags",
 				jsonParams(corpusId, documentId, MAX_WAIT_SECONDS), callback);
 	}
-
-	
 
 }
