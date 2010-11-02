@@ -69,14 +69,8 @@ public class JsonClient {
 		host = uri.getHost() == null ? "localhost" : uri.getHost();
 
 		port = uri.getPort();
-		if (port == -1) {
-			if (scheme.equalsIgnoreCase("http")) {
-				port = 80;
-			} else if (scheme.equalsIgnoreCase("https")) { // Kept for adding
-															// ssl support in
-															// the future..
-				port = 443;
-			}
+		if (port == -1 && scheme.equalsIgnoreCase("http")) {
+			port = 80;
 		}
 
 		if (!scheme.equalsIgnoreCase("http")) {
