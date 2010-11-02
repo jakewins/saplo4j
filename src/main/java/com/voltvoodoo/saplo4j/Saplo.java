@@ -52,11 +52,33 @@ public class Saplo {
 	private SaploConnection saploConnection;
 
 	private static void assertCorpusIdNotNull(SaploCorpus.Id corpusId) {
-		if(corpusId == null) {
-			throw new IllegalArgumentException("Saplo corpus id cannot be null.");
+		if (corpusId == null) {
+			throw new IllegalArgumentException(
+					"Saplo corpus id cannot be null.");
+		}
+	}
+
+	private static void assertDocumentIdNotNull(SaploDocument.Id docId) {
+		if (docId == null) {
+			throw new IllegalArgumentException(
+					"Saplo document id cannot be null.");
 		}
 	}
 	
+	private static void assertLanguageNotNull(Language lang) {
+		if (lang == null) {
+			throw new IllegalArgumentException(
+					"Language cannot be null.");
+		}
+	}
+	
+	private static void assertSimilarityIdNotNull(SaploSimilarity.Id similarityId) {
+		if (similarityId == null) {
+			throw new IllegalArgumentException(
+					"Language cannot be null.");
+		}
+	}
+
 	//
 	// CONSTRUCTORS
 	//
@@ -338,7 +360,8 @@ public class Saplo {
 	public void addDocument(SaploCorpus.Id corpusId, String headline,
 			String body, String meta, Language lang,
 			SaploCallback<SaploDocument.Id> callback) {
-		addDocument(corpusId, headline, body, meta, lang, new AddDocumentCallback( callback ));
+		addDocument(corpusId, headline, body, meta, lang,
+				new AddDocumentCallback(callback));
 	}
 
 	/**
@@ -579,7 +602,10 @@ public class Saplo {
 	private void addDocument(SaploCorpus.Id corpusId, String headline,
 			String body, String meta, Language lang,
 			AddDocumentCallback callback) {
+		
 		assertCorpusIdNotNull(corpusId);
+		assertLanguageNotNull(lang);
+		
 		call("corpus.addArticle",
 				jsonParams(corpusId, headline, "", body, "", "", "", lang),
 				callback);
@@ -588,7 +614,11 @@ public class Saplo {
 	private void updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			String headline, String body, String meta, Language lang,
 			UpdateDocumentCallback callback) {
+		
 		assertCorpusIdNotNull(corpusId);
+		assertDocumentIdNotNull(id);
+		assertLanguageNotNull(lang);
+		
 		call("corpus.updateArticle",
 				jsonParams(corpusId, id, headline, "", body, "", meta, "", lang),
 				callback);
@@ -596,13 +626,20 @@ public class Saplo {
 
 	private void deleteDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			DeleteDocumentCallback callback) {
+		
 		assertCorpusIdNotNull(corpusId);
+		assertDocumentIdNotNull(id);
+		
 		call("corpus.deleteArticle", jsonParams(corpusId, id), callback);
 	}
 
 	private void getDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			GetDocumentCallback callback) {
+		
 		assertCorpusIdNotNull(corpusId);
+		assertDocumentIdNotNull(id);
+		
+		
 		call("corpus.getArticle", jsonParams(corpusId, id), callback);
 	}
 
@@ -612,7 +649,11 @@ public class Saplo {
 
 	private void getSimilarDocuments(SaploCorpus.Id corpusId,
 			SaploDocument.Id id, GetSimilarDocumentsCallback callback) {
+		
 		assertCorpusIdNotNull(corpusId);
+		assertDocumentIdNotNull(id);
+		
+		
 		call("match.getSimilarArticles",
 				jsonParams(corpusId, id, MAX_WAIT_SECONDS, 50, 0.1, 1.0),
 				callback);
@@ -620,13 +661,21 @@ public class Saplo {
 
 	private void getMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
 			SaploDocument.Id documentId, GetMatchCallback callback) {
+		
 		assertCorpusIdNotNull(corpusId);
+		assertDocumentIdNotNull(documentId);
+		assertSimilarityIdNotNull(id);
+		
 		call("match.getMatch", jsonParams(corpusId, documentId, id), callback);
 	}
 
 	private void deleteMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
 			SaploDocument.Id documentId, DeleteMatchCallback callback) {
+		
 		assertCorpusIdNotNull(corpusId);
+		assertDocumentIdNotNull(documentId);
+		assertSimilarityIdNotNull(id);
+		
 		call("match.getMatch", jsonParams(corpusId, documentId, id), callback);
 	}
 
@@ -636,7 +685,10 @@ public class Saplo {
 
 	private void getEntityTags(SaploCorpus.Id corpusId,
 			SaploDocument.Id documentId, GetEntityTagsCallback callback) {
+		
 		assertCorpusIdNotNull(corpusId);
+		assertDocumentIdNotNull(documentId);
+		
 		call("tags.getEntityTags",
 				jsonParams(corpusId, documentId, MAX_WAIT_SECONDS), callback);
 	}
