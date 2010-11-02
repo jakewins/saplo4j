@@ -4,6 +4,7 @@ import org.json.simple.JSONObject;
 
 import com.voltvoodoo.saplo4j.async.AbstractInternalCallback;
 import com.voltvoodoo.saplo4j.exception.SaploException;
+import com.voltvoodoo.saplo4j.exception.SaploGeneralException;
 import com.voltvoodoo.saplo4j.model.SaploCorpus;
 
 /**
@@ -22,7 +23,11 @@ public class CreateCorpusCallback extends AbstractInternalCallback {
 	}
 
 	public void onSuccessfulResponse(JSONObject result) {
-		this.corpusId = new SaploCorpus.Id( (Long) ((JSONObject)result.get("result")).get("corpusId") );
+		try {
+			this.corpusId = new SaploCorpus.Id( (Long) ((JSONObject)result.get("result")).get("corpusId") );
+		} catch(ClassCastException e ) {
+			this.exception = new SaploGeneralException("Response did not seem to contain a corpus id.");
+		}
 	}
 	
 }

@@ -20,7 +20,7 @@ public class GetSimilarDocumentsCallback extends AbstractInternalCallback {
 	public SaploException exception = null;
 	public ArrayList<SaploSimilarity> similarDocuments = new ArrayList<SaploSimilarity>();
 
-	protected SaploCallback<ArrayList<SaploSimilarity>> userCallback;
+	protected SaploCallback<List<SaploSimilarity>> userCallback;
 	protected SaploDocument.Id sourceDocumentId;
 	protected SaploCorpus.Id sourceCorpusId;
 	protected List<SaploCorpus.Id> searchIn;
@@ -37,7 +37,7 @@ public class GetSimilarDocumentsCallback extends AbstractInternalCallback {
 
 	public GetSimilarDocumentsCallback(SaploDocument.Id sourceDocumentId,
 			SaploCorpus.Id sourceCorpusId,
-			SaploCallback<ArrayList<SaploSimilarity>> userCallback) {
+			SaploCallback<List<SaploSimilarity>> userCallback) {
 		this.userCallback = userCallback;
 		this.sourceCorpusId = sourceCorpusId;
 		this.sourceDocumentId = sourceDocumentId;

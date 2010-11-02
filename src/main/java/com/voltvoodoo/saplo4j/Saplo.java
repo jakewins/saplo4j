@@ -19,6 +19,7 @@ import com.voltvoodoo.saplo4j.async.impl.GetSimilarityCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetTagsCallback;
 import com.voltvoodoo.saplo4j.async.impl.UpdateDocumentCallback;
 import com.voltvoodoo.saplo4j.exception.SaploConnectionException;
+import com.voltvoodoo.saplo4j.http.DefaultSaploConnection;
 import com.voltvoodoo.saplo4j.http.SaploConnection;
 import com.voltvoodoo.saplo4j.http.SaploRequest;
 import com.voltvoodoo.saplo4j.model.Language;
@@ -93,11 +94,21 @@ public class Saplo {
 	 *            Your Saplo Secret API key
 	 */
 	public Saplo(String apiKey, String secretKey) {
-		saploConnection = new SaploConnection(apiKey, secretKey, SAPLO_URL,
-				API_RESOURCE);
-
+		this(new DefaultSaploConnection(apiKey, secretKey, SAPLO_URL,
+				API_RESOURCE));
+	}
+	
+	/**
+	 * Create a new Saplo client. This instantly creates a new Saplo session.
+	 * Don't forgot to call Saplo.close when you are done.
+	 * 
+	 * @param saploConnection
+	 */
+	public Saplo(SaploConnection saploConnection) {
+		this.saploConnection = saploConnection;
 		saploConnection.open();
 	}
+	
 
 	//
 	// CONNECTION MANAGEMENT
@@ -140,6 +151,7 @@ public class Saplo {
 	public SaploCorpus.Id createCorpus(String name, String description,
 			Language lang) {
 
+		assertLanguageNotNull(lang);
 		CreateCorpusCallback cb = new CreateCorpusCallback();
 		call("corpus.createCorpus", jsonParams(name, description, lang), cb);
 
@@ -161,6 +173,7 @@ public class Saplo {
 	 */
 	public boolean deleteCorpus(SaploCorpus.Id id) {
 
+		assertCorpusIdNotNull(id);
 		DeleteCorpusCallback cb = new DeleteCorpusCallback();
 		call("corpus.deleteCorpus", jsonParams(id), cb);
 
@@ -474,7 +487,7 @@ public class Saplo {
 
 	public void getSimilarDocuments(SaploCorpus.Id corpusId,
 			SaploDocument.Id id,
-			SaploCallback<ArrayList<SaploSimilarity>> callback) {
+			SaploCallback<List<SaploSimilarity>> callback) {
 
 		getSimilarDocuments(corpusId, id, new GetSimilarDocumentsCallback(id,
 				corpusId, callback));
