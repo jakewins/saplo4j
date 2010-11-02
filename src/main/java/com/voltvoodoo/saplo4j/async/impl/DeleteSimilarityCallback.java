@@ -6,7 +6,7 @@ import com.voltvoodoo.saplo4j.async.AbstractInternalCallback;
 import com.voltvoodoo.saplo4j.async.SaploCallback;
 import com.voltvoodoo.saplo4j.exception.SaploException;
 
-public class DeleteMatchCallback extends AbstractInternalCallback {
+public class DeleteSimilarityCallback extends AbstractInternalCallback {
 
 	public SaploException exception = null;
 	public Boolean result = null;
@@ -17,10 +17,10 @@ public class DeleteMatchCallback extends AbstractInternalCallback {
 	// CONSTRUCTORS
 	//
 
-	public DeleteMatchCallback() {
+	public DeleteSimilarityCallback() {
 	}
 
-	public DeleteMatchCallback(SaploCallback<Boolean> userCallback) {
+	public DeleteSimilarityCallback(SaploCallback<Boolean> userCallback) {
 		this.userCallback = userCallback;
 	}
 

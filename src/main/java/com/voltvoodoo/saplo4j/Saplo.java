@@ -10,13 +10,13 @@ import com.voltvoodoo.saplo4j.async.impl.AddDocumentCallback;
 import com.voltvoodoo.saplo4j.async.impl.CreateCorpusCallback;
 import com.voltvoodoo.saplo4j.async.impl.DeleteCorpusCallback;
 import com.voltvoodoo.saplo4j.async.impl.DeleteDocumentCallback;
-import com.voltvoodoo.saplo4j.async.impl.DeleteMatchCallback;
+import com.voltvoodoo.saplo4j.async.impl.DeleteSimilarityCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetCorpusIdsCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetCorpusInfoCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetDocumentCallback;
-import com.voltvoodoo.saplo4j.async.impl.GetEntityTagsCallback;
-import com.voltvoodoo.saplo4j.async.impl.GetMatchCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetSimilarDocumentsCallback;
+import com.voltvoodoo.saplo4j.async.impl.GetSimilarityCallback;
+import com.voltvoodoo.saplo4j.async.impl.GetTagsCallback;
 import com.voltvoodoo.saplo4j.async.impl.UpdateDocumentCallback;
 import com.voltvoodoo.saplo4j.exception.SaploConnectionException;
 import com.voltvoodoo.saplo4j.http.SaploConnection;
@@ -432,11 +432,11 @@ public class Saplo {
 		}
 	}
 
-	public SaploSimilarity getMatch(SaploCorpus.Id corpusId,
+	public SaploSimilarity getSimilarity(SaploCorpus.Id corpusId,
 			SaploSimilarity.Id id, SaploDocument.Id documentId) {
 
-		GetMatchCallback cb = new GetMatchCallback(corpusId, id, documentId);
-		getMatch(corpusId, id, documentId, cb);
+		GetSimilarityCallback cb = new GetSimilarityCallback(corpusId, id, documentId);
+		getSimilarity(corpusId, id, documentId, cb);
 
 		while (cb.exception == null && cb.similarity == null) {
 			cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
@@ -449,12 +449,12 @@ public class Saplo {
 		}
 	}
 
-	public boolean deleteMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
+	public boolean deleteSimilarity(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
 			SaploDocument.Id documentId) {
 
-		DeleteMatchCallback cb = new DeleteMatchCallback();
+		DeleteSimilarityCallback cb = new DeleteSimilarityCallback();
 
-		deleteMatch(corpusId, id, documentId, cb);
+		deleteSimilarity(corpusId, id, documentId, cb);
 
 		while (cb.exception == null && cb.result == null) {
 			cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
@@ -480,30 +480,30 @@ public class Saplo {
 				corpusId, callback));
 	}
 
-	public void getMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
+	public void getSimilarity(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
 			SaploDocument.Id documentId, SaploCallback<SaploSimilarity> callback) {
 
-		getMatch(corpusId, id, documentId, new GetMatchCallback(corpusId, id,
+		getSimilarity(corpusId, id, documentId, new GetSimilarityCallback(corpusId, id,
 				documentId, callback));
 	}
 
-	public void deleteMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
+	public void deleteSimilarity(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
 			SaploDocument.Id documentId, SaploCallback<Boolean> callback) {
 
-		deleteMatch(corpusId, id, documentId, new DeleteMatchCallback(callback));
+		deleteSimilarity(corpusId, id, documentId, new DeleteSimilarityCallback(callback));
 	}
 
 	//
 	// TAG API
 	// Synchronous
 
-	public List<SaploTag> getEntityTags(SaploCorpus.Id corpusId,
+	public List<SaploTag> getTags(SaploCorpus.Id corpusId,
 			SaploDocument.Id documentId) {
 
-		GetEntityTagsCallback cb = new GetEntityTagsCallback(corpusId,
+		GetTagsCallback cb = new GetTagsCallback(corpusId,
 				documentId);
 
-		getEntityTags(corpusId, documentId, cb);
+		getTags(corpusId, documentId, cb);
 
 		while (cb.exception == null && cb.result == null) {
 			cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
@@ -521,10 +521,10 @@ public class Saplo {
 	// TAG API
 	// Async
 
-	public void getEntityTags(SaploCorpus.Id corpusId,
+	public void getTags(SaploCorpus.Id corpusId,
 			SaploDocument.Id documentId, SaploCallback<List<SaploTag>> callback) {
 
-		getEntityTags(corpusId, documentId, new GetEntityTagsCallback(corpusId,
+		getTags(corpusId, documentId, new GetTagsCallback(corpusId,
 				documentId, callback));
 
 	}
@@ -644,7 +644,7 @@ public class Saplo {
 	}
 
 	//
-	// MATCH API
+	// SIMILARITY API
 	// Underlying implementation
 
 	private void getSimilarDocuments(SaploCorpus.Id corpusId,
@@ -659,8 +659,8 @@ public class Saplo {
 				callback);
 	}
 
-	private void getMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
-			SaploDocument.Id documentId, GetMatchCallback callback) {
+	private void getSimilarity(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
+			SaploDocument.Id documentId, GetSimilarityCallback callback) {
 		
 		assertCorpusIdNotNull(corpusId);
 		assertDocumentIdNotNull(documentId);
@@ -669,8 +669,8 @@ public class Saplo {
 		call("match.getMatch", jsonParams(corpusId, documentId, id), callback);
 	}
 
-	private void deleteMatch(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
-			SaploDocument.Id documentId, DeleteMatchCallback callback) {
+	private void deleteSimilarity(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
+			SaploDocument.Id documentId, DeleteSimilarityCallback callback) {
 		
 		assertCorpusIdNotNull(corpusId);
 		assertDocumentIdNotNull(documentId);
@@ -683,8 +683,8 @@ public class Saplo {
 	// TAG API
 	// Underlying implementation
 
-	private void getEntityTags(SaploCorpus.Id corpusId,
-			SaploDocument.Id documentId, GetEntityTagsCallback callback) {
+	private void getTags(SaploCorpus.Id corpusId,
+			SaploDocument.Id documentId, GetTagsCallback callback) {
 		
 		assertCorpusIdNotNull(corpusId);
 		assertDocumentIdNotNull(documentId);

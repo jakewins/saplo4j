@@ -5,6 +5,28 @@ This is a Java client for the Saplo API. It supports most saplo API functions, w
 
 Most long-running methods support both synchronous and asynchronous behaviour. The asynchrounous version of the API allows for several thousand calls to be made simultaneously.
 
+Quickstart
+----------
+
+    // Connect
+    Saplo saplo = new Saplo("myapikey","myapisecret");
+    
+    // Create a corpus to put documents in
+    SaploCorpus.Id corpusId = saplo.createCorpus("My corpus", "A fancy corpus I made.", Language.ENGLISH);
+    
+    // Put some documents in the corpus
+    SaploDocument.Id firstDocId = saplo.addDocument(corpusId, "The first document", "Body text", Language.ENGLISH);
+    SaploDocument.Id secondDocId = saplo.addDocument(corpusId, "The second document", "Body text", Language.ENGLISH);
+    SaploDocument.Id thirdDocId = saplo.addDocument(corpusId, "The third document", "Body text", Language.ENGLISH);
+	
+    // Do some semantic magic
+    List<SaploSimilarity> similarToFirstDoc = saplo.getSimilarDocuments(corpusId, firstDocId);
+    List<SaploTag> keywordsInFirstDoc = saplo.getTags(corpusId, firstDocId);
+    
+    // Clean up
+    saplo.close();
+    
+
 Use as maven dependency
 -----------------------
 

@@ -9,7 +9,7 @@ import com.voltvoodoo.saplo4j.model.SaploCorpus;
 import com.voltvoodoo.saplo4j.model.SaploDocument;
 import com.voltvoodoo.saplo4j.model.SaploSimilarity;
 
-public class GetMatchCallback extends AbstractInternalCallback {
+public class GetSimilarityCallback extends AbstractInternalCallback {
 
 	public SaploException exception = null;
 	public SaploSimilarity similarity = null;
@@ -24,15 +24,15 @@ public class GetMatchCallback extends AbstractInternalCallback {
 	// CONSTRUCTORS
 	//
 
-	public GetMatchCallback() {
+	public GetSimilarityCallback() {
 	}
 
-	public GetMatchCallback(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
+	public GetSimilarityCallback(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
 			SaploDocument.Id documentId) {
 		this(corpusId, id, documentId, null);
 	}
 
-	public GetMatchCallback(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
+	public GetSimilarityCallback(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
 			SaploDocument.Id documentId,
 			SaploCallback<SaploSimilarity> userCallback) {
 		this.corpusId = corpusId;

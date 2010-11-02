@@ -13,7 +13,7 @@ import com.voltvoodoo.saplo4j.model.SaploCorpus;
 import com.voltvoodoo.saplo4j.model.SaploDocument;
 import com.voltvoodoo.saplo4j.model.SaploTag;
 
-public class GetEntityTagsCallback extends AbstractInternalCallback {
+public class GetTagsCallback extends AbstractInternalCallback {
 
 	public SaploException exception = null;
 	public List<SaploTag> result = null;
@@ -40,15 +40,15 @@ public class GetEntityTagsCallback extends AbstractInternalCallback {
 	// CONSTRUCTORS
 	//
 
-	public GetEntityTagsCallback() {
+	public GetTagsCallback() {
 	}
 
-	public GetEntityTagsCallback(SaploCorpus.Id corpusId,
+	public GetTagsCallback(SaploCorpus.Id corpusId,
 			SaploDocument.Id documentId) {
 		this(corpusId, documentId, null);
 	}
 
-	public GetEntityTagsCallback(SaploCorpus.Id corpusId,
+	public GetTagsCallback(SaploCorpus.Id corpusId,
 			SaploDocument.Id documentId,
 			SaploCallback<List<SaploTag>> userCallback) {
 		this.corpusId = corpusId;
