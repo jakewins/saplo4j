@@ -40,7 +40,7 @@ public class Language implements Serializable, JSONAware {
 	}
 
 	public String toJSONString() {
-		return toString();
+		return "\"" + toString() + "\"";
 	}
 	
 	public boolean equals(Language other) {

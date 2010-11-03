@@ -39,6 +39,8 @@ import com.voltvoodoo.saplo4j.model.SaploTag;
  * The synchronous API is convenient when you handle few requests and don't want
  * to deal with concurrency problems and creating callbacks.
  * 
+ * TODO: Use saplo.listMethods to discover available methods.
+ * 
  * @author Jacob Hansson <jacob@voltvoodoo.com>, progre55, Fredrik Hörte
  *         <fredrik@saplo.com>,
  * 
@@ -651,7 +653,6 @@ public class Saplo {
 		
 		assertCorpusIdNotNull(corpusId);
 		assertDocumentIdNotNull(id);
-		
 		
 		call("corpus.getArticle", jsonParams(corpusId, id), callback);
 	}
