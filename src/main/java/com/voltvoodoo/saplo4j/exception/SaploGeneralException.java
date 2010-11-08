@@ -26,6 +26,10 @@ public class SaploGeneralException extends SaploException {
 	public SaploGeneralException(String message) {
 		super(-1, message, null, null);
 	}
+	
+	public SaploGeneralException(String message, SaploRequest request) {
+		super(-1, message, request, null);
+	}
 
 	public SaploGeneralException(String message, Throwable cause) {
 		super(-1, message, null, cause);

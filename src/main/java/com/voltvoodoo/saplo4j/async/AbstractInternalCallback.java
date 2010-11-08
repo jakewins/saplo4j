@@ -28,6 +28,8 @@ public abstract class AbstractInternalCallback implements
 	protected volatile boolean alive = true;
 	protected volatile SaploRequest request;
 
+	private boolean interrupted = false;
+	
 	//
 	// PUBLIC
 	//
@@ -78,12 +80,19 @@ public abstract class AbstractInternalCallback implements
 					throw new SaploGeneralException(
 							"Waiting for saplo to respond timed out (current timeout is "
 									+ timeout + "ms).");
+				} else if(interrupted) {
+					this.alive = false;
+					onFailedResponse(new SaploGeneralException("The call was interrupted by something manually calling interrupt() on the callback on our side of the wire.", request));
 				}
 
 			} catch (InterruptedException e) {
-				break;
+				onFailedResponse(new SaploGeneralException("The call was interrupted by something manually calling interrupt() on the thread on our side of the wire.", request));
 			}
 		}
+	}
+	
+	public void interrupt() {
+		interrupted = true;
 	}
 
 	//
@@ -107,7 +116,7 @@ public abstract class AbstractInternalCallback implements
 				|| exception.getErrorCode() == 1005) {
 			// Saplo is still working, send request again.
 			try {
-				getSaploRequest().replay();
+				getSaploRequest().send();
 				return true;
 			} catch (SaploException e) {
 

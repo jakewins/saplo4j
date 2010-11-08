@@ -3,6 +3,7 @@ package com.voltvoodoo.saplo4j.http;
 import java.net.URISyntaxException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -42,6 +43,8 @@ public class DefaultSaploConnection implements SaploConnection {
 	 */
 	private ConcurrentLinkedQueue<SaploRequest> pendingRequests = new ConcurrentLinkedQueue<SaploRequest>();
 
+	private Logger log = Logger.getLogger(getClass());
+	
 	//
 	// CONSTRUCTOR
 	//
@@ -67,9 +70,12 @@ public class DefaultSaploConnection implements SaploConnection {
 	// PUBLIC
 	//
 
-	public DefaultSaploConnection open() throws SaploException {
+	public DefaultSaploConnection open() {
 
 		if (!isOpen()) {
+			
+			log.info("OPENING SESSION");
+			
 			// Init session
 			CreateSessionCallback cb = new CreateSessionCallback();
 			initSession(apiKey, secretKey, cb);
@@ -86,12 +92,15 @@ public class DefaultSaploConnection implements SaploConnection {
 
 	}
 
-	public DefaultSaploConnection close() throws SaploException {
+	public DefaultSaploConnection close() {
 		if (isOpen()) {
+			
+			log.info("CLOSING SESSION");
+			
 			CloseSessionCallback cb = new CloseSessionCallback();
 
 			pendingRequests.clear();
-			call(new SaploRequest("auth.killSession", null, cb, this));
+			call(new DefaultSaploRequest("auth.killSession", null, cb, this));
 
 			cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
 

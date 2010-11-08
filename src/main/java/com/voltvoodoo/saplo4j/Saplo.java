@@ -11,6 +11,7 @@ import com.voltvoodoo.saplo4j.async.impl.CreateCorpusCallback;
 import com.voltvoodoo.saplo4j.async.impl.DeleteCorpusCallback;
 import com.voltvoodoo.saplo4j.async.impl.DeleteDocumentCallback;
 import com.voltvoodoo.saplo4j.async.impl.DeleteSimilarityCallback;
+import com.voltvoodoo.saplo4j.async.impl.GetAvailableMethodsCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetCorpusIdsCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetCorpusInfoCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetDocumentCallback;
@@ -20,6 +21,7 @@ import com.voltvoodoo.saplo4j.async.impl.GetTagsCallback;
 import com.voltvoodoo.saplo4j.async.impl.UpdateDocumentCallback;
 import com.voltvoodoo.saplo4j.exception.SaploConnectionException;
 import com.voltvoodoo.saplo4j.http.DefaultSaploConnection;
+import com.voltvoodoo.saplo4j.http.DefaultSaploRequest;
 import com.voltvoodoo.saplo4j.http.SaploConnection;
 import com.voltvoodoo.saplo4j.http.SaploRequest;
 import com.voltvoodoo.saplo4j.model.Language;
@@ -39,8 +41,6 @@ import com.voltvoodoo.saplo4j.model.SaploTag;
  * The synchronous API is convenient when you handle few requests and don't want
  * to deal with concurrency problems and creating callbacks.
  * 
- * TODO: Use saplo.listMethods to discover available methods.
- * 
  * @author Jacob Hansson <jacob@voltvoodoo.com>, progre55, Fredrik Hörte
  *         <fredrik@saplo.com>,
  * 
@@ -55,30 +55,25 @@ public class Saplo {
 	private SaploConnection saploConnection;
 
 	private static void assertCorpusIdNotNull(SaploCorpus.Id corpusId) {
-		if (corpusId == null) {
-			throw new IllegalArgumentException(
-					"Saplo corpus id cannot be null.");
-		}
+		assertArgumentNotNull(corpusId, "Saplo corpus id cannot be null.");
 	}
 
 	private static void assertDocumentIdNotNull(SaploDocument.Id docId) {
-		if (docId == null) {
-			throw new IllegalArgumentException(
-					"Saplo document id cannot be null.");
-		}
+		assertArgumentNotNull(docId,"Saplo document id cannot be null.");
 	}
 	
 	private static void assertLanguageNotNull(Language lang) {
-		if (lang == null) {
-			throw new IllegalArgumentException(
-					"Language cannot be null.");
-		}
+		assertArgumentNotNull(lang, "Language cannot be null.");
 	}
 	
 	private static void assertSimilarityIdNotNull(SaploSimilarity.Id similarityId) {
-		if (similarityId == null) {
+		assertArgumentNotNull(similarityId, "Similarity id cannot be null.");
+	}
+	
+	private static void assertArgumentNotNull(Object obj, String message) {
+		if (obj == null) {
 			throw new IllegalArgumentException(
-					"Language cannot be null.");
+					message);
 		}
 	}
 
@@ -107,7 +102,7 @@ public class Saplo {
 	 * @param saploConnection
 	 */
 	public Saplo(SaploConnection saploConnection) {
-		this.saploConnection = saploConnection;
+		setConnection(saploConnection);
 		saploConnection.open();
 	}
 	
@@ -115,21 +110,29 @@ public class Saplo {
 	//
 	// CONNECTION MANAGEMENT
 	//
-
-	/**
-	 * Call this to finish the Saplo session.
-	 */
-	public void close() {
-		saploConnection.close();
+	
+	public SaploConnection getConnection() {
+		return saploConnection;
 	}
-
-	/**
-	 * Call this to open the Saplo session. A session is opened by default when
-	 * you instantiate this class, so the only use for this is if you have
-	 * closed the session and want to open a new one.
-	 */
-	public void open() {
-		saploConnection.open();
+	
+	public void setConnection(SaploConnection saploConnection) {
+		this.saploConnection = saploConnection;
+	}
+	
+	//
+	// META API
+	//
+	
+	public List<String> getAvailableMethods() {
+		GetAvailableMethodsCallback cb = new GetAvailableMethodsCallback();
+		call("saplo.listMethods", jsonParams(), cb);
+		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
+		
+		if (cb.getMethods() != null) {
+			return cb.getMethods();
+		} else {
+			throw cb.getException();
+		}
 	}
 
 	//
@@ -566,23 +569,8 @@ public class Saplo {
 	public void call(String method, Object params,
 			SaploCallback<Object> callback) throws SaploConnectionException {
 
-		call(new SaploRequest(method, params, callback, saploConnection));
-
-	}
-
-	/**
-	 * Perform a low-level call to Saplo using a SaploRequest object.
-	 * 
-	 * This is convenient if you want to redo a request that has failed. Use the
-	 * getRequest() method that all SaploException objects have, and simply call
-	 * this method with the request. All your callbacks etc will be used as they
-	 * were in the first request.
-	 * 
-	 * @param request
-	 * @throws SaploConnectionException
-	 */
-	public void call(SaploRequest request) throws SaploConnectionException {
-		saploConnection.call(request);
+		SaploRequest req = new DefaultSaploRequest(method, params, callback, saploConnection);
+		req.send();
 	}
 
 	//
@@ -620,6 +608,9 @@ public class Saplo {
 		
 		assertCorpusIdNotNull(corpusId);
 		assertLanguageNotNull(lang);
+		assertArgumentNotNull(headline, "Headline cannot be null.");
+		assertArgumentNotNull(body, "Body cannot be null.");
+		assertArgumentNotNull(meta, "Meta cannot be null.");
 		
 		call("corpus.addArticle",
 				jsonParams(corpusId, headline, "", body, "", "", "", lang),
@@ -633,6 +624,9 @@ public class Saplo {
 		assertCorpusIdNotNull(corpusId);
 		assertDocumentIdNotNull(id);
 		assertLanguageNotNull(lang);
+		assertArgumentNotNull(headline, "Headline cannot be null.");
+		assertArgumentNotNull(body, "Body cannot be null.");
+		assertArgumentNotNull(meta, "Meta cannot be null.");
 		
 		call("corpus.updateArticle",
 				jsonParams(corpusId, id, headline, "", body, "", meta, "", lang),

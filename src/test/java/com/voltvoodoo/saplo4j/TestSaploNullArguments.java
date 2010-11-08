@@ -1,4 +1,4 @@
-package com.voltvoodoo.saplo4j.http;
+package com.voltvoodoo.saplo4j;
 
 import static org.junit.Assert.fail;
 
@@ -10,6 +10,7 @@ import org.junit.Test;
 import com.voltvoodoo.saplo4j.Saplo;
 import com.voltvoodoo.saplo4j.async.SaploCallback;
 import com.voltvoodoo.saplo4j.exception.SaploException;
+import com.voltvoodoo.saplo4j.http.MockSaploConnection;
 import com.voltvoodoo.saplo4j.model.Language;
 import com.voltvoodoo.saplo4j.model.SaploCorpus;
 import com.voltvoodoo.saplo4j.model.SaploDocument;

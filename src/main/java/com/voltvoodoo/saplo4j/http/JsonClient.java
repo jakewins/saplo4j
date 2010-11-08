@@ -142,12 +142,8 @@ public class JsonClient {
 				request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING,
 						HttpHeaders.Values.GZIP);
 
-
-				//System.out.println(method + " " + resource);
 				if (method == HttpMethod.POST || method == HttpMethod.PUT) {
 					if (data != null) {
-						
-						//System.out.println(method + ": " + data.toString());
 						
 						byte[] binaryData = binaryJSON(data);
 						ChannelBuffer buffer = ChannelBuffers
@@ -201,6 +197,8 @@ public class JsonClient {
 
 		if (data instanceof JSONObject || data instanceof JSONArray) {
 			binaryData = data.toString().getBytes();
+		} else if ( data instanceof String) {
+			binaryData = ((String)data).getBytes();
 		} else {
 			binaryData = JSONValue.toJSONString(data).getBytes();
 		}
