@@ -1,6 +1,6 @@
 package com.voltvoodoo.saplo4j.exception;
 
-import com.voltvoodoo.saplo4j.http.SaploRequest;
+import com.voltvoodoo.saplo4j.http.JsonRequest;
 
 /**
  * Exceptions related to the current context.
@@ -32,7 +32,7 @@ public class SaploContextException extends SaploException {
 	}
 
 	public SaploContextException(int errorCode, String message,
-			SaploRequest request, Throwable cause) {
+			JsonRequest request, Throwable cause) {
 		super(errorCode, message, request, cause);
 	}
 

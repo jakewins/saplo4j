@@ -1,18 +1,18 @@
 package com.voltvoodoo.saplo4j.async;
 
-import static com.voltvoodoo.saplo4j.utils.SaploResponseParser.parseSaploResponse;
-
 import java.util.Date;
 
 import org.json.simple.JSONObject;
 
 import com.voltvoodoo.saplo4j.exception.SaploException;
 import com.voltvoodoo.saplo4j.exception.SaploGeneralException;
-import com.voltvoodoo.saplo4j.http.SaploRequest;
+import com.voltvoodoo.saplo4j.http.JsonCallback;
+import com.voltvoodoo.saplo4j.http.JsonRequest;
+import com.voltvoodoo.saplo4j.http.RequestAware;
 
 /**
- * Parent for callbacks that are handle "raw" responses from Saplo. This class
- * takes care of error checking and JSON typecasting.
+ * Parent callback that adds support for interrupting (ie. ignoring) the response,
+ * as well as halting execution until a response is recieved.
  * 
  * This also provides a "wait" method, {@link #awaitResponse(long)}, that allows
  * you to block the current thread until your callback has been called. This in
@@ -22,11 +22,11 @@ import com.voltvoodoo.saplo4j.http.SaploRequest;
  * 
  */
 public abstract class AbstractInternalCallback implements
-		SaploCallback<Object>, RequestAware {
+	JsonCallback, RequestAware {
 
-	protected volatile boolean gotResponse = false;
-	protected volatile boolean alive = true;
-	protected volatile SaploRequest request;
+	protected boolean gotResponse = false;
+	protected boolean alive = true;
+	protected JsonRequest request;
 
 	private boolean interrupted = false;
 	
@@ -38,27 +38,23 @@ public abstract class AbstractInternalCallback implements
 
 	public abstract void onFailedResponse(SaploException exception);
 
-	public void onFailure(SaploException exception) {
+	public void onFailure(Exception exception) {
 
 		if (alive) {
-			if (!handleTimeoutExceptions(exception)) {
-				onFailedResponse(exception);
+			if(exception instanceof SaploException ) {
+				onFailedResponse((SaploException)exception);
+			} else {
+				onFailedResponse(new SaploGeneralException(exception));
 			}
 		}
 
 		gotResponse = true;
 	}
 
-	public void onSuccess(Object response) {
-
+	public void onSuccess(JSONObject response) {
+		
 		if (alive) {
-			try {
-				onSuccessfulResponse(parseSaploResponse(response, request));
-			} catch (SaploException e) {
-				if (!handleTimeoutExceptions(e)) {
-					onFailedResponse(e);
-				}
-			}
+			onSuccessfulResponse(response);
 		}
 
 		gotResponse = true;
@@ -77,9 +73,11 @@ public abstract class AbstractInternalCallback implements
 				if (current.after(end)) {
 					this.alive = false; // Make sure the wrapped callback is not
 										// called later
-					throw new SaploGeneralException(
-							"Waiting for saplo to respond timed out (current timeout is "
-									+ timeout + "ms).");
+					onFailedResponse(new SaploGeneralException(
+							"Waiting for saplo to respond timed out (the timeout set was "
+									+ timeout + "ms)."));
+					break;
+					
 				} else if(interrupted) {
 					this.alive = false;
 					onFailedResponse(new SaploGeneralException("The call was interrupted by something manually calling interrupt() on the callback on our side of the wire.", request));
@@ -99,30 +97,11 @@ public abstract class AbstractInternalCallback implements
 	// REQUEST AWARENESS
 	//
 
-	public void setSaploRequest(SaploRequest request) {
+	public void setJsonRequest(JsonRequest request) {
 		this.request = request;
 	}
 
-	public SaploRequest getSaploRequest() {
+	public JsonRequest getJsonRequest() {
 		return this.request;
-	}
-
-	//
-	// INTERNALS
-	//
-
-	private boolean handleTimeoutExceptions(SaploException exception) {
-		if (exception.getErrorCode() == 1004
-				|| exception.getErrorCode() == 1005) {
-			// Saplo is still working, send request again.
-			try {
-				getSaploRequest().send();
-				return true;
-			} catch (SaploException e) {
-
-			}
-		}
-
-		return false;
 	}
 }

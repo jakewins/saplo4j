@@ -1,6 +1,6 @@
 package com.voltvoodoo.saplo4j.exception;
 
-import com.voltvoodoo.saplo4j.http.SaploRequest;
+import com.voltvoodoo.saplo4j.http.JsonRequest;
 
 /**
  * General errors, a bit of this and a bit of that :)
@@ -18,6 +18,10 @@ public class SaploGeneralException extends SaploException {
 	public SaploGeneralException() {
 		super(-1, "", null, null);
 	}
+	
+	public SaploGeneralException(Throwable cause) {
+		super(-1, "Internal error, see nested.", null, cause);
+	}
 
 	public SaploGeneralException(int errorCode) {
 		super(errorCode, "", null, null);
@@ -27,8 +31,12 @@ public class SaploGeneralException extends SaploException {
 		super(-1, message, null, null);
 	}
 	
-	public SaploGeneralException(String message, SaploRequest request) {
+	public SaploGeneralException(String message, JsonRequest request) {
 		super(-1, message, request, null);
+	}
+	
+	public SaploGeneralException(String message, JsonRequest request, Throwable cause) {
+		super(-1, message, request, cause);
 	}
 
 	public SaploGeneralException(String message, Throwable cause) {
@@ -44,7 +52,7 @@ public class SaploGeneralException extends SaploException {
 	}
 
 	public SaploGeneralException(int errorCode, String message,
-			SaploRequest request, Throwable cause) {
+			JsonRequest request, Throwable cause) {
 		super(errorCode, message, request, cause);
 	}
 

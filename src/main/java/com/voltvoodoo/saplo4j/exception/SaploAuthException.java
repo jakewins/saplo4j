@@ -1,6 +1,6 @@
 package com.voltvoodoo.saplo4j.exception;
 
-import com.voltvoodoo.saplo4j.http.SaploRequest;
+import com.voltvoodoo.saplo4j.http.JsonRequest;
 
 /**
  * Triggered when API keys are incorrect.
@@ -32,7 +32,7 @@ public class SaploAuthException extends SaploException {
 	}
 
 	public SaploAuthException(int errorCode, String message,
-			SaploRequest request, Throwable cause) {
+			JsonRequest request, Throwable cause) {
 		super(errorCode, message, request, cause);
 	}
 

@@ -54,7 +54,6 @@
 			<artifactId>json-simple</artifactId>
 			<version>1.1</version>
 			<type>jar</type>
-			<scope />
 		</dependency>
 
 		<!-- Temporary until Netty 3.2 is available in public maven repos. -->
@@ -70,7 +69,21 @@
 			<artifactId>junit</artifactId>
 			<version>4.8.2</version>
 			<type>jar</type>
-			<scope>compile</scope>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.8.5</version>
+			<type>jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.simpleframework</groupId>
+			<artifactId>simple</artifactId>
+			<version>4.1.21</version>
+			<type>jar</type>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

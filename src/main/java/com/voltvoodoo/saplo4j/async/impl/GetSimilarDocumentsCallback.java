@@ -52,7 +52,7 @@ public class GetSimilarDocumentsCallback extends AbstractInternalCallback {
 		if (exception.getErrorCode() == 1501) {
 			// No results found, trigger successful response with empty result
 			// XXX: Triggering an error on empty results is behavior that is due
-			// to change in the next iteration of the Saplo API
+			// to change in the next iteration of the Saplo API 	
 			JSONObject emulatedResponse = new JSONObject();
 			emulatedResponse.put("result", jsonParams());
 			this.onSuccessfulResponse(emulatedResponse);
@@ -67,7 +67,7 @@ public class GetSimilarDocumentsCallback extends AbstractInternalCallback {
 
 	public void onSuccessfulResponse(JSONObject result) {
 		// [{"resultCorpusId":191,"resultPublishUrl":"","resultArticleId":3,"matchId":1,"resultHeadline":"Document 3","resultValue":0.6713}]
-
+		
 		JSONArray jsonDocuments = (JSONArray) result.get("result");
 		JSONObject jsonDocument;
 

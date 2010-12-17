@@ -1,6 +1,6 @@
 package com.voltvoodoo.saplo4j.exception;
 
-import com.voltvoodoo.saplo4j.http.SaploRequest;
+import com.voltvoodoo.saplo4j.http.JsonRequest;
 
 /**
  * 
@@ -25,9 +25,13 @@ public class SaploConnectionException extends SaploException {
 	public SaploConnectionException(String message, Throwable cause) {
 		super(-1, message, null, cause);
 	}
+	
+	public SaploConnectionException(String message, JsonRequest req, Throwable cause) {
+		super(-1, message, req, cause);
+	}
 
 	public SaploConnectionException(int errorCode, String message,
-			SaploRequest request, Throwable cause) {
+			JsonRequest request, Throwable cause) {
 		super(errorCode, message, request, cause);
 	}
 

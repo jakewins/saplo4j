@@ -18,12 +18,11 @@ import com.voltvoodoo.saplo4j.async.impl.GetDocumentCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetSimilarDocumentsCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetSimilarityCallback;
 import com.voltvoodoo.saplo4j.async.impl.GetTagsCallback;
+import com.voltvoodoo.saplo4j.async.impl.ResetCorpusCallback;
 import com.voltvoodoo.saplo4j.async.impl.UpdateDocumentCallback;
 import com.voltvoodoo.saplo4j.exception.SaploConnectionException;
-import com.voltvoodoo.saplo4j.http.DefaultSaploConnection;
-import com.voltvoodoo.saplo4j.http.DefaultSaploRequest;
-import com.voltvoodoo.saplo4j.http.SaploConnection;
-import com.voltvoodoo.saplo4j.http.SaploRequest;
+import com.voltvoodoo.saplo4j.http.JsonCallback;
+import com.voltvoodoo.saplo4j.http.JsonRequest;
 import com.voltvoodoo.saplo4j.model.Language;
 import com.voltvoodoo.saplo4j.model.SaploCorpus;
 import com.voltvoodoo.saplo4j.model.SaploDocument;
@@ -47,33 +46,35 @@ import com.voltvoodoo.saplo4j.model.SaploTag;
  */
 public class Saplo {
 
-	private static int MAX_WAIT_SECONDS = 180;
+	private static int MAX_WAIT_SECONDS = 60 * 10;
 
 	public static String SAPLO_URL = "http://api.saplo.com/";
 	public static String API_RESOURCE = "/rpc/json";
 
 	private SaploConnection saploConnection;
+	private long retryInterval;
+	private long saploTimeoutParameter;
 
 	private static void assertCorpusIdNotNull(SaploCorpus.Id corpusId) {
 		assertArgumentNotNull(corpusId, "Saplo corpus id cannot be null.");
 	}
 
 	private static void assertDocumentIdNotNull(SaploDocument.Id docId) {
-		assertArgumentNotNull(docId,"Saplo document id cannot be null.");
+		assertArgumentNotNull(docId, "Saplo document id cannot be null.");
 	}
-	
+
 	private static void assertLanguageNotNull(Language lang) {
 		assertArgumentNotNull(lang, "Language cannot be null.");
 	}
-	
-	private static void assertSimilarityIdNotNull(SaploSimilarity.Id similarityId) {
+
+	private static void assertSimilarityIdNotNull(
+			SaploSimilarity.Id similarityId) {
 		assertArgumentNotNull(similarityId, "Similarity id cannot be null.");
 	}
-	
+
 	private static void assertArgumentNotNull(Object obj, String message) {
 		if (obj == null) {
-			throw new IllegalArgumentException(
-					message);
+			throw new IllegalArgumentException(message);
 		}
 	}
 
@@ -91,10 +92,23 @@ public class Saplo {
 	 *            Your Saplo Secret API key
 	 */
 	public Saplo(String apiKey, String secretKey) {
-		this(new DefaultSaploConnection(apiKey, secretKey, SAPLO_URL,
-				API_RESOURCE));
+		this(apiKey, secretKey, SAPLO_URL, API_RESOURCE);
 	}
-	
+
+	/**
+	 * Create a new Saplo client. This instantly creates a new Saplo session.
+	 * Don't forgot to call Saplo.close when you are done.
+	 * 
+	 * @param apiKey
+	 *            Your Saplo API key
+	 * @param secretKey
+	 *            Your Saplo Secret API key
+	 */
+	public Saplo(String apiKey, String secretKey, String saploUrl,
+			String apiResource) {
+		this(new SaploConnection(apiKey, secretKey, saploUrl, apiResource));
+	}
+
 	/**
 	 * Create a new Saplo client. This instantly creates a new Saplo session.
 	 * Don't forgot to call Saplo.close when you are done.
@@ -104,30 +118,44 @@ public class Saplo {
 	public Saplo(SaploConnection saploConnection) {
 		setConnection(saploConnection);
 		saploConnection.open();
+		this.retryInterval = 1000 * 10;
+		this.saploTimeoutParameter = 5;
 	}
-	
 
 	//
-	// CONNECTION MANAGEMENT
+	// MANAGEMENT
 	//
-	
+
 	public SaploConnection getConnection() {
 		return saploConnection;
 	}
-	
+
 	public void setConnection(SaploConnection saploConnection) {
 		this.saploConnection = saploConnection;
 	}
 	
+	/**
+	 * The number of milliseconds that should be allowed to pass before
+	 * we close the connection to Saplo and redo the request.
+	 * @param retryInterval
+	 */
+	public void setRetryInterval(long retryInterval) {
+		this.retryInterval = retryInterval;
+	}
+	
+	public long getRetryInterval() {
+		return retryInterval;
+	}
+
 	//
 	// META API
 	//
-	
+
 	public List<String> getAvailableMethods() {
 		GetAvailableMethodsCallback cb = new GetAvailableMethodsCallback();
 		call("saplo.listMethods", jsonParams(), cb);
 		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
-		
+
 		if (cb.getMethods() != null) {
 			return cb.getMethods();
 		} else {
@@ -234,6 +262,27 @@ public class Saplo {
 			throw cb.getException();
 		} else {
 			return cb.getCorpus();
+		}
+	}
+
+	/**
+	 * Reset a given corpus, removing all documents inside it. Corpus language,
+	 * name and description et cetera remains the same.
+	 * 
+	 * @param id
+	 *            Id of the corpus you want to reset.
+	 * @return
+	 */
+	public boolean resetCorpus(SaploCorpus.Id id) {
+		ResetCorpusCallback cb = new ResetCorpusCallback();
+		call("corpus.reset", jsonParams(id), cb);
+
+		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
+
+		if (cb.getException() != null) {
+			throw cb.getException();
+		} else {
+			return cb.getResult();
 		}
 	}
 
@@ -438,11 +487,9 @@ public class Saplo {
 				corpusId);
 
 		getSimilarDocuments(corpusId, id, cb);
-
-		while (cb.exception == null && cb.similarDocuments == null) {
-			cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
-		}
-
+		
+		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
+		
 		if (cb.similarDocuments != null) {
 			return cb.similarDocuments;
 		} else {
@@ -453,12 +500,11 @@ public class Saplo {
 	public SaploSimilarity getSimilarity(SaploCorpus.Id corpusId,
 			SaploSimilarity.Id id, SaploDocument.Id documentId) {
 
-		GetSimilarityCallback cb = new GetSimilarityCallback(corpusId, id, documentId);
+		GetSimilarityCallback cb = new GetSimilarityCallback(corpusId, id,
+				documentId);
 		getSimilarity(corpusId, id, documentId, cb);
 
-		while (cb.exception == null && cb.similarity == null) {
-			cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
-		}
+		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
 
 		if (cb.similarity != null) {
 			return cb.similarity;
@@ -467,16 +513,14 @@ public class Saplo {
 		}
 	}
 
-	public boolean deleteSimilarity(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
-			SaploDocument.Id documentId) {
+	public boolean deleteSimilarity(SaploCorpus.Id corpusId,
+			SaploSimilarity.Id id, SaploDocument.Id documentId) {
 
 		DeleteSimilarityCallback cb = new DeleteSimilarityCallback();
 
 		deleteSimilarity(corpusId, id, documentId, cb);
 
-		while (cb.exception == null && cb.result == null) {
-			cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
-		}
+		cb.awaitResponse(MAX_WAIT_SECONDS * 1000);
 
 		if (cb.result != null) {
 			return cb.result;
@@ -491,8 +535,7 @@ public class Saplo {
 	// Async
 
 	public void getSimilarDocuments(SaploCorpus.Id corpusId,
-			SaploDocument.Id id,
-			SaploCallback<List<SaploSimilarity>> callback) {
+			SaploDocument.Id id, SaploCallback<List<SaploSimilarity>> callback) {
 
 		getSimilarDocuments(corpusId, id, new GetSimilarDocumentsCallback(id,
 				corpusId, callback));
@@ -501,14 +544,16 @@ public class Saplo {
 	public void getSimilarity(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
 			SaploDocument.Id documentId, SaploCallback<SaploSimilarity> callback) {
 
-		getSimilarity(corpusId, id, documentId, new GetSimilarityCallback(corpusId, id,
-				documentId, callback));
+		getSimilarity(corpusId, id, documentId, new GetSimilarityCallback(
+				corpusId, id, documentId, callback));
 	}
 
-	public void deleteSimilarity(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
-			SaploDocument.Id documentId, SaploCallback<Boolean> callback) {
+	public void deleteSimilarity(SaploCorpus.Id corpusId,
+			SaploSimilarity.Id id, SaploDocument.Id documentId,
+			SaploCallback<Boolean> callback) {
 
-		deleteSimilarity(corpusId, id, documentId, new DeleteSimilarityCallback(callback));
+		deleteSimilarity(corpusId, id, documentId,
+				new DeleteSimilarityCallback(callback));
 	}
 
 	//
@@ -518,8 +563,7 @@ public class Saplo {
 	public List<SaploTag> getTags(SaploCorpus.Id corpusId,
 			SaploDocument.Id documentId) {
 
-		GetTagsCallback cb = new GetTagsCallback(corpusId,
-				documentId);
+		GetTagsCallback cb = new GetTagsCallback(corpusId, documentId);
 
 		getTags(corpusId, documentId, cb);
 
@@ -539,11 +583,11 @@ public class Saplo {
 	// TAG API
 	// Async
 
-	public void getTags(SaploCorpus.Id corpusId,
-			SaploDocument.Id documentId, SaploCallback<List<SaploTag>> callback) {
+	public void getTags(SaploCorpus.Id corpusId, SaploDocument.Id documentId,
+			SaploCallback<List<SaploTag>> callback) {
 
-		getTags(corpusId, documentId, new GetTagsCallback(corpusId,
-				documentId, callback));
+		getTags(corpusId, documentId, new GetTagsCallback(corpusId, documentId,
+				callback));
 
 	}
 
@@ -551,6 +595,10 @@ public class Saplo {
 	// OTHER
 	//
 
+	public void call(String method, Object params, JsonCallback callback) {
+		call(method, params, callback, 0);
+	}
+	
 	/**
 	 * Low-level interface for communicating directly with Saplo API. This can
 	 * be used in case you want to pass optional parameters that are not
@@ -566,11 +614,13 @@ public class Saplo {
 	 *            is a SaploCallback that will get the response JSON object, or
 	 *            any exceptions.
 	 */
-	public void call(String method, Object params,
-			SaploCallback<Object> callback) throws SaploConnectionException {
+	public void call(String method, Object params, JsonCallback callback, long retryInterval)
+			throws SaploConnectionException {
 
-		SaploRequest req = new DefaultSaploRequest(method, params, callback, saploConnection);
+		JsonRequest req = new SaploRequest(method, params, callback,
+				saploConnection, retryInterval);
 		req.send();
+
 	}
 
 	//
@@ -605,13 +655,13 @@ public class Saplo {
 	private void addDocument(SaploCorpus.Id corpusId, String headline,
 			String body, String meta, Language lang,
 			AddDocumentCallback callback) {
-		
+
 		assertCorpusIdNotNull(corpusId);
 		assertLanguageNotNull(lang);
 		assertArgumentNotNull(headline, "Headline cannot be null.");
 		assertArgumentNotNull(body, "Body cannot be null.");
 		assertArgumentNotNull(meta, "Meta cannot be null.");
-		
+
 		call("corpus.addArticle",
 				jsonParams(corpusId, headline, "", body, "", "", "", lang),
 				callback);
@@ -620,14 +670,14 @@ public class Saplo {
 	private void updateDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			String headline, String body, String meta, Language lang,
 			UpdateDocumentCallback callback) {
-		
+
 		assertCorpusIdNotNull(corpusId);
 		assertDocumentIdNotNull(id);
 		assertLanguageNotNull(lang);
 		assertArgumentNotNull(headline, "Headline cannot be null.");
 		assertArgumentNotNull(body, "Body cannot be null.");
 		assertArgumentNotNull(meta, "Meta cannot be null.");
-		
+
 		call("corpus.updateArticle",
 				jsonParams(corpusId, id, headline, "", body, "", meta, "", lang),
 				callback);
@@ -635,20 +685,20 @@ public class Saplo {
 
 	private void deleteDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			DeleteDocumentCallback callback) {
-		
+
 		assertCorpusIdNotNull(corpusId);
 		assertDocumentIdNotNull(id);
-		
+
 		call("corpus.deleteArticle", jsonParams(corpusId, id), callback);
 	}
 
 	private void getDocument(SaploCorpus.Id corpusId, SaploDocument.Id id,
 			GetDocumentCallback callback) {
-		
+
 		assertCorpusIdNotNull(corpusId);
 		assertDocumentIdNotNull(id);
-		
-		call("corpus.getArticle", jsonParams(corpusId, id), callback);
+
+		call("corpus.getArticle", jsonParams(corpusId, id), callback, retryInterval);
 	}
 
 	//
@@ -657,33 +707,33 @@ public class Saplo {
 
 	private void getSimilarDocuments(SaploCorpus.Id corpusId,
 			SaploDocument.Id id, GetSimilarDocumentsCallback callback) {
-		
+
 		assertCorpusIdNotNull(corpusId);
 		assertDocumentIdNotNull(id);
-		
-		
+
 		call("match.getSimilarArticles",
-				jsonParams(corpusId, id, MAX_WAIT_SECONDS, 50, 0.1, 1.0),
-				callback);
+				jsonParams(corpusId, id, saploTimeoutParameter, 50, 0.1, 1.0),
+				callback, retryInterval);
 	}
 
 	private void getSimilarity(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
 			SaploDocument.Id documentId, GetSimilarityCallback callback) {
-		
+
 		assertCorpusIdNotNull(corpusId);
 		assertDocumentIdNotNull(documentId);
 		assertSimilarityIdNotNull(id);
-		
-		call("match.getMatch", jsonParams(corpusId, documentId, id), callback);
+
+		call("match.getMatch", jsonParams(corpusId, documentId, id), callback, retryInterval);
 	}
 
-	private void deleteSimilarity(SaploCorpus.Id corpusId, SaploSimilarity.Id id,
-			SaploDocument.Id documentId, DeleteSimilarityCallback callback) {
-		
+	private void deleteSimilarity(SaploCorpus.Id corpusId,
+			SaploSimilarity.Id id, SaploDocument.Id documentId,
+			DeleteSimilarityCallback callback) {
+
 		assertCorpusIdNotNull(corpusId);
 		assertDocumentIdNotNull(documentId);
 		assertSimilarityIdNotNull(id);
-		
+
 		call("match.getMatch", jsonParams(corpusId, documentId, id), callback);
 	}
 
@@ -691,14 +741,14 @@ public class Saplo {
 	// TAG API
 	// Underlying implementation
 
-	private void getTags(SaploCorpus.Id corpusId,
-			SaploDocument.Id documentId, GetTagsCallback callback) {
-		
+	private void getTags(SaploCorpus.Id corpusId, SaploDocument.Id documentId,
+			GetTagsCallback callback) {
+
 		assertCorpusIdNotNull(corpusId);
 		assertDocumentIdNotNull(documentId);
-		
+
 		call("tags.getEntityTags",
-				jsonParams(corpusId, documentId, MAX_WAIT_SECONDS), callback);
+				jsonParams(corpusId, documentId, saploTimeoutParameter), callback, retryInterval);
 	}
 
 }

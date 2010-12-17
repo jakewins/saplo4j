@@ -1,23 +1,22 @@
 package com.voltvoodoo.saplo4j;
 
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.voltvoodoo.saplo4j.Saplo;
 import com.voltvoodoo.saplo4j.async.SaploCallback;
 import com.voltvoodoo.saplo4j.exception.SaploException;
-import com.voltvoodoo.saplo4j.http.MockSaploConnection;
 import com.voltvoodoo.saplo4j.model.Language;
 import com.voltvoodoo.saplo4j.model.SaploCorpus;
 import com.voltvoodoo.saplo4j.model.SaploDocument;
 import com.voltvoodoo.saplo4j.model.SaploSimilarity;
 import com.voltvoodoo.saplo4j.model.SaploTag;
 
-public class TestSaploNullArguments {
+public class SaploNullArgumentsTest {
 
 	Saplo saplo;
 
@@ -65,7 +64,8 @@ public class TestSaploNullArguments {
 	
 	@Before
 	public void resetSaplo() {
-		saplo = new Saplo(new MockSaploConnection());
+		SaploConnection conn = mock(SaploConnection.class);
+		saplo = new Saplo(conn);
 	}
 	
 	// NULL CORPUS ID

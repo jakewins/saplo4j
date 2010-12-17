@@ -1,6 +1,6 @@
 package com.voltvoodoo.saplo4j.exception;
 
-import com.voltvoodoo.saplo4j.http.SaploRequest;
+import com.voltvoodoo.saplo4j.http.JsonRequest;
 
 /**
  * Abstract parent class for all Saplo Exceptions.
@@ -16,9 +16,9 @@ public abstract class SaploException extends RuntimeException {
 	private static final long serialVersionUID = -3924337453676846404L;
 
 	protected int errorCode;
-	protected SaploRequest request;
+	protected JsonRequest request;
 
-	public SaploException(int errorCode, String message, SaploRequest request,
+	public SaploException(int errorCode, String message, JsonRequest request,
 			Throwable cause) {
 		super(message, cause);
 		this.errorCode = errorCode;
@@ -41,7 +41,7 @@ public abstract class SaploException extends RuntimeException {
 	 * 
 	 * If a request is not available, this will be null.
 	 */
-	public SaploRequest getRequest() {
+	public JsonRequest getRequest() {
 		return request;
 	}
 
