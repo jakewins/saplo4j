@@ -23,7 +23,7 @@ public class GetTagsCallback extends AbstractInternalCallback {
 	private SaploCorpus.Id corpusId;
 	private SaploDocument.Id documentId;
 
-	public static SaploTag.Type getType(int tagId) {
+	public static SaploTag.Type getType(long tagId) {
 		if (tagId == 2)
 			return SaploTag.Type.TOPIC;
 		if (tagId == 3)
@@ -80,7 +80,7 @@ public class GetTagsCallback extends AbstractInternalCallback {
 			this.result.add(new SaploTag(new SaploTag.Id((Long) jsonTag
 					.get("tagId")), corpusId, documentId, (String) jsonTag
 					.get("tagWord"),
-					getType((Integer) jsonTag.get("tagTypeId"))));
+					getType((Long) jsonTag.get("tagTypeId"))));
 		}
 		if (userCallback != null) {
 			userCallback.onSuccess(this.result);
