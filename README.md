@@ -1,3 +1,8 @@
+## NOTE: This is no longer maintained
+
+If you'd like to take this over, feel free to fork or ping me and I will transfer the repo.
+
+
 Saplo4j
 =======
 
